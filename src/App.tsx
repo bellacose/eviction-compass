@@ -14,6 +14,7 @@ import CasesList from "./pages/admin/CasesList";
 import CaseDetail from "./pages/admin/CaseDetail";
 import NewCase from "./pages/admin/NewCase";
 import ClientsList from "./pages/admin/ClientsList";
+import ClientDetail from "./pages/admin/ClientDetail";
 import UsersManagement from "./pages/admin/UsersManagement";
 import AdminSettings from "./pages/admin/Settings";
 
@@ -62,6 +63,7 @@ function AppRoutes() {
           <Route path="cases/new" element={<NewCase />} />
           <Route path="cases/:id" element={<CaseDetail />} />
           <Route path="clients" element={<ClientsList />} />
+          <Route path="clients/:id" element={<ClientDetail />} />
           <Route path="users" element={<UsersManagement />} />
           <Route path="settings" element={<AdminSettings />} />
         </Route>
