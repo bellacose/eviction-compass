@@ -7,9 +7,22 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ArrowLeft, Plus, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+
+interface TenantForm {
+  firstName: string;
+  lastName: string;
+  phone: string;
+  email: string;
+  ssn: string;
+  dob: string;
+}
+
+const emptyTenant = (): TenantForm => ({
+  firstName: "", lastName: "", phone: "", email: "", ssn: "", dob: "",
+});
 
 export default function NewCase() {
   const navigate = useNavigate();
@@ -24,20 +37,37 @@ export default function NewCase() {
   const [propertyCity, setPropertyCity] = useState("Buffalo");
   const [propertyState, setPropertyState] = useState("NY");
   const [propertyZip, setPropertyZip] = useState("");
-  const [tenantName, setTenantName] = useState("");
-  const [tenantPhone, setTenantPhone] = useState("");
-  const [tenantEmail, setTenantEmail] = useState("");
+  const [tenants, setTenants] = useState<TenantForm[]>([emptyTenant()]);
   const [caseType, setCaseType] = useState("nonpayment");
   const [priority, setPriority] = useState("normal");
+  const [militaryVerified, setMilitaryVerified] = useState(false);
+  const [evictionReason, setEvictionReason] = useState("unpaid_rent");
+  const [evictionReasonOther, setEvictionReasonOther] = useState("");
 
   useEffect(() => {
     supabase.from("clients").select("id, company_name").eq("is_active", true).then(({ data }) => setClients(data || []));
   }, []);
 
+  const updateTenant = (index: number, field: keyof TenantForm, value: string) => {
+    setTenants(prev => prev.map((t, i) => i === index ? { ...t, [field]: value } : t));
+  };
+
+  const addTenant = () => setTenants(prev => [...prev, emptyTenant()]);
+
+  const removeTenant = (index: number) => {
+    if (tenants.length <= 1) return;
+    setTenants(prev => prev.filter((_, i) => i !== index));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!clientId || !propertyAddress || !tenantName) {
+    const firstTenant = tenants[0];
+    if (!clientId || !propertyAddress || !firstTenant.firstName || !firstTenant.lastName) {
       toast({ title: "Missing fields", description: "Please fill in required fields", variant: "destructive" });
+      return;
+    }
+    if (!militaryVerified) {
+      toast({ title: "Military verification required", description: "Please confirm tenant(s) are not active military members", variant: "destructive" });
       return;
     }
     setLoading(true);
@@ -47,21 +77,38 @@ export default function NewCase() {
       client_id: clientId, address_line1: propertyAddress, city: propertyCity, state: propertyState, zip: propertyZip,
     }).select().single();
 
-    // Create tenant
-    const { data: tenant } = await supabase.from("tenants").insert({
-      full_name: tenantName, phone: tenantPhone, email: tenantEmail,
-    }).select().single();
+    if (!property) {
+      toast({ title: "Error", description: "Failed to create property", variant: "destructive" });
+      setLoading(false);
+      return;
+    }
 
-    if (!property || !tenant) {
-      toast({ title: "Error", description: "Failed to create property or tenant", variant: "destructive" });
+    // Create all tenants
+    const tenantInserts = tenants.map(t => ({
+      full_name: `${t.firstName} ${t.lastName}`.trim(),
+      first_name: t.firstName || null,
+      last_name: t.lastName || null,
+      phone: t.phone || null,
+      email: t.email || null,
+      ssn_last4: t.ssn || null,
+      date_of_birth: t.dob || null,
+    }));
+
+    const { data: createdTenants } = await supabase.from("tenants").insert(tenantInserts).select();
+
+    if (!createdTenants || createdTenants.length === 0) {
+      toast({ title: "Error", description: "Failed to create tenant(s)", variant: "destructive" });
       setLoading(false);
       return;
     }
 
     // Create case
     const { data: newCase, error } = await supabase.from("cases").insert({
-      client_id: clientId, property_id: property.id, primary_tenant_id: tenant.id,
+      client_id: clientId, property_id: property.id, primary_tenant_id: createdTenants[0].id,
       case_type: caseType, priority: priority as any, assigned_admin_id: user?.id,
+      military_verified: militaryVerified,
+      eviction_reason: evictionReason,
+      eviction_reason_other: evictionReason === "other" ? evictionReasonOther : null,
     }).select().single();
 
     if (error || !newCase) {
@@ -70,8 +117,11 @@ export default function NewCase() {
       return;
     }
 
-    // Link tenant to case
-    await supabase.from("case_tenants").insert({ case_id: newCase.id, tenant_id: tenant.id, is_primary: true });
+    // Link all tenants to case
+    const caseTenantInserts = createdTenants.map((t, i) => ({
+      case_id: newCase.id, tenant_id: t.id, is_primary: i === 0,
+    }));
+    await supabase.from("case_tenants").insert(caseTenantInserts);
 
     // Apply default milestone template
     const { data: templateItems } = await supabase
@@ -97,7 +147,6 @@ export default function NewCase() {
         };
       });
       await supabase.from("case_milestones").insert(milestones);
-      // Auto-complete first milestone
       const firstMilestone = milestones[0];
       if (firstMilestone) {
         await supabase.from("case_milestones")
@@ -119,7 +168,7 @@ export default function NewCase() {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <Card>
-          <CardHeader><CardTitle className="text-sm">Client</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-sm">Client (Plaintiff)</CardTitle></CardHeader>
           <CardContent>
             <Select value={clientId} onValueChange={setClientId}>
               <SelectTrigger><SelectValue placeholder="Select client" /></SelectTrigger>
@@ -143,19 +192,64 @@ export default function NewCase() {
         </Card>
 
         <Card>
-          <CardHeader><CardTitle className="text-sm">Tenant</CardTitle></CardHeader>
-          <CardContent className="space-y-3">
-            <div><Label>Full Name *</Label><Input value={tenantName} onChange={(e) => setTenantName(e.target.value)} required /></div>
-            <div className="grid grid-cols-2 gap-3">
-              <div><Label>Phone</Label><Input value={tenantPhone} onChange={(e) => setTenantPhone(e.target.value)} /></div>
-              <div><Label>Email</Label><Input value={tenantEmail} onChange={(e) => setTenantEmail(e.target.value)} type="email" /></div>
-            </div>
+          <CardHeader>
+            <CardTitle className="text-sm">Tenants</CardTitle>
+            <p className="text-xs text-muted-foreground">Add all tenants found on the lease.</p>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {tenants.map((tenant, index) => (
+              <div key={index} className="space-y-3 border rounded-lg p-3 relative">
+                {tenants.length > 1 && (
+                  <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={() => removeTenant(index)}>
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                )}
+                <div className="grid grid-cols-2 gap-3">
+                  <div><Label>First Name *</Label><Input value={tenant.firstName} onChange={(e) => updateTenant(index, "firstName", e.target.value)} required={index === 0} /></div>
+                  <div><Label>Last Name *</Label><Input value={tenant.lastName} onChange={(e) => updateTenant(index, "lastName", e.target.value)} required={index === 0} /></div>
+                </div>
+                <div className="grid grid-cols-3 gap-3">
+                  <div><Label>Phone</Label><Input value={tenant.phone} onChange={(e) => updateTenant(index, "phone", e.target.value)} /></div>
+                  <div><Label>SSN (last 4) *</Label><Input value={tenant.ssn} onChange={(e) => updateTenant(index, "ssn", e.target.value.replace(/\D/g, "").slice(0, 4))} maxLength={4} required={index === 0} /></div>
+                  <div><Label>Date of Birth *</Label><Input type="date" value={tenant.dob} onChange={(e) => updateTenant(index, "dob", e.target.value)} required={index === 0} /></div>
+                </div>
+                <div><Label>Email</Label><Input value={tenant.email} onChange={(e) => updateTenant(index, "email", e.target.value)} type="email" /></div>
+              </div>
+            ))}
+            <Button type="button" variant="secondary" className="w-full" onClick={addTenant}>
+              <Plus className="h-4 w-4 mr-2" /> Add Another Tenant
+            </Button>
           </CardContent>
         </Card>
+
+        <div className="flex items-start gap-2 px-1">
+          <Checkbox id="military" checked={militaryVerified} onCheckedChange={(v) => setMilitaryVerified(v === true)} />
+          <Label htmlFor="military" className="text-sm leading-snug cursor-pointer">
+            Tenant(s) are not active military members.
+          </Label>
+        </div>
 
         <Card>
           <CardHeader><CardTitle className="text-sm">Case Details</CardTitle></CardHeader>
           <CardContent className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Eviction Reason *</Label>
+                <Select value={evictionReason} onValueChange={setEvictionReason}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="unpaid_rent">Unpaid Rent</SelectItem>
+                    <SelectItem value="holdover">Holdover</SelectItem>
+                    <SelectItem value="lease_violation">Lease Violation</SelectItem>
+                    <SelectItem value="nuisance">Nuisance</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {evictionReason === "other" && (
+                <div><Label>Other Reason</Label><Input value={evictionReasonOther} onChange={(e) => setEvictionReasonOther(e.target.value)} placeholder="Describe reason" /></div>
+              )}
+            </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label>Case Type</Label>

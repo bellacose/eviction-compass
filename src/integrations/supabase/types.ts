@@ -226,11 +226,14 @@ export type Database = {
           court_case_number: string | null
           court_name: string | null
           created_at: string
+          eviction_reason: string
+          eviction_reason_other: string | null
           hold_reason: string | null
           id: string
           is_on_hold: boolean
           jurisdiction_county: string
           jurisdiction_state: string
+          military_verified: boolean
           opened_date: string
           primary_tenant_id: string | null
           priority: Database["public"]["Enums"]["case_priority"]
@@ -249,11 +252,14 @@ export type Database = {
           court_case_number?: string | null
           court_name?: string | null
           created_at?: string
+          eviction_reason?: string
+          eviction_reason_other?: string | null
           hold_reason?: string | null
           id?: string
           is_on_hold?: boolean
           jurisdiction_county?: string
           jurisdiction_state?: string
+          military_verified?: boolean
           opened_date?: string
           primary_tenant_id?: string | null
           priority?: Database["public"]["Enums"]["case_priority"]
@@ -272,11 +278,14 @@ export type Database = {
           court_case_number?: string | null
           court_name?: string | null
           created_at?: string
+          eviction_reason?: string
+          eviction_reason_other?: string | null
           hold_reason?: string | null
           id?: string
           is_on_hold?: boolean
           jurisdiction_county?: string
           jurisdiction_state?: string
+          military_verified?: boolean
           opened_date?: string
           primary_tenant_id?: string | null
           priority?: Database["public"]["Enums"]["case_priority"]
@@ -816,32 +825,44 @@ export type Database = {
       tenants: {
         Row: {
           created_at: string
+          date_of_birth: string | null
           email: string | null
+          first_name: string | null
           full_name: string
           id: string
+          last_name: string | null
           mailing_address: string | null
           notes: string | null
           phone: string | null
+          ssn_last4: string | null
           updated_at: string
         }
         Insert: {
           created_at?: string
+          date_of_birth?: string | null
           email?: string | null
+          first_name?: string | null
           full_name: string
           id?: string
+          last_name?: string | null
           mailing_address?: string | null
           notes?: string | null
           phone?: string | null
+          ssn_last4?: string | null
           updated_at?: string
         }
         Update: {
           created_at?: string
+          date_of_birth?: string | null
           email?: string | null
+          first_name?: string | null
           full_name?: string
           id?: string
+          last_name?: string | null
           mailing_address?: string | null
           notes?: string | null
           phone?: string | null
+          ssn_last4?: string | null
           updated_at?: string
         }
         Relationships: []
