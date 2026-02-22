@@ -1,155 +1,83 @@
 
 
-# EvictFlow — Eviction Case Management System
+# Clients CRUD + Client Portal User Management
 
-## Overview
-A multi-tenant eviction case tracking and client communication platform for an eviction processing company serving landlords and property managers in Erie County, NY (expandable to other jurisdictions). **Not legal advice software** — a case management and communication tool.
+## What We're Building
 
----
+Two connected features:
+1. Full create/read/update/delete for Client organizations
+2. The ability to manage client portal users (invite, link to client, activate/deactivate) from within the client detail page
 
-## Phase 1: Foundation (Auth, Database, Roles, RLS)
-
-### Supabase Setup (Lovable Cloud)
-- Full database schema with all 16 tables as specified (clients, profiles, properties, tenants, cases, case_tenants, milestone_templates, milestone_template_items, case_milestones, service_records, court_events, documents, case_notes, activity_log, notifications, system_settings)
-- Enum types for roles (`super_admin`, `admin`, `client`), case status, priority, milestone status, etc.
-- Auto-incrementing human-readable case numbers (EV-2026-0001)
-
-### Authentication & Roles
-- Supabase Auth with email/password login
-- Separate `user_roles` table (security best practice) with `has_role()` security definer function
-- Profile auto-creation on signup via database trigger
-- Invite-based account creation by admin + self-registration with invite codes for clients
-
-### Row Level Security
-- Super admin / admin: full read/write on all tables
-- Client users: read-only access scoped to their own client_id
-- Client-visible filtering on milestones, documents, and notes
-- Internal notes/docs completely hidden from client users
-
-### Seed Data
-- 2 sample clients with contact info
-- 6 cases across various statuses (intake → resolved)
-- Pre-populated milestone timelines, sample documents metadata, court events
-- At least 1 overdue milestone and 1 upcoming court date
-- Erie County NY default workflow template with all 12 milestones
+This means admins can go to Clients, create a new client company, then from that client's detail page invite a user who will get their own login to the client portal.
 
 ---
 
-## Phase 2: Admin Portal
+## Changes
 
-### Login Page
-- Clean, professional login screen with EvictFlow branding
-- Role-based redirect (admin → admin dashboard, client → client dashboard)
+### 1. Client Detail Page (new: `/admin/clients/:id`)
 
-### Admin Dashboard
-- **KPI Cards**: Open Cases, Ready to File, Upcoming Court Dates, Overdue Milestones
-- **Recent Activity Feed** from activity_log
-- **My Assigned Cases** quick list
-- **Filters** by client, status, county
+A new page showing:
+- Editable client info form (company name, contact name, email, phone, address fields, active status)
+- Save button to update
+- A "Client Portal Users" section listing all profiles linked to this client (`profiles.client_id`)
+- An "Invite User" button that opens a dialog to create a new client portal user
 
-### Cases List
-- Searchable, filterable table with columns: Case ID, Client, Tenant, Property, Status, Next Action, Assigned Admin, Last Updated
-- Filter chips for client, status, assigned admin, county, upcoming court date
-- Quick-scan layout optimized for fast operations
+### 2. New Client Dialog (on Clients list page)
 
-### Case Detail (Core Workflow Screen)
-- **Status Header Bar**: Current status, assigned admin, next key date, "Mark Next Milestone Complete" button
-- **Tabs/Sections**:
-  - **Summary**: Case info, client, property, tenant(s), court details
-  - **Timeline/Milestones**: Visual timeline with completed (✓), pending, and overdue (red) milestones. Click to complete with notes.
-  - **Documents**: Upload with category selection, internal/client visibility toggle, version tracking
-  - **Service**: Service records with method, date, tracking, affidavit link
-  - **Court**: Court events (hearings, adjournments, outcomes), virtual links, next event
-  - **Notes**: Separate internal note and client update composers. Client updates auto-generate notifications.
-  - **Activity**: Full audit trail for the case
+- "Add Client" button at top of the clients list
+- Dialog/form with fields: company name, contact name, email, phone, address
+- On submit, inserts into the `clients` table
 
-### New Case Intake Form
-- Create or select existing client
-- Property information (create or select)
-- Tenant(s) with primary designation
-- Case type selection, jurisdiction defaults
-- Admin assignment
-- Milestone template application (auto-calculates due dates)
-- Initial document uploads
+### 3. Edit Client (on Client Detail page)
 
-### Clients Management
-- Clients list with search
-- Client detail: contact info, their users, their cases
+- Pre-filled form with all client fields
+- Save changes updates the `clients` table
+- Toggle active/inactive status
 
-### User Management (Super Admin)
-- Create/invite admin staff and client users
-- Invite link generation for client self-registration
-- Activate/deactivate users
-- Assign client users to client organizations
+### 4. Client Portal User Invitation (on Client Detail page)
 
-### Settings (Super Admin)
-- **Milestone Templates**: CRUD for workflow templates by jurisdiction + case type
-- **Jurisdiction Defaults**: Default notice days, reminder offsets, courts list
-- **Notification Templates**: Placeholder for email templates
-- **Legal Disclaimer**: Editable disclaimer text
-- Visible warning: *"This software is for case tracking and communication only. It does not provide legal advice."*
+- "Invite User" button opens a dialog
+- Fields: full name, email
+- On submit:
+  - Creates the user account via a backend function (edge function using the service role key to call `supabase.auth.admin.createUser`)
+  - Sets their `client_id` on the profile
+  - Assigns the `client` role in `user_roles`
+- The invited user gets an email to set their password and can then log into the client portal
+
+### 5. Deactivate/Reactivate Users
+
+- Toggle button on each user row in the client detail page
+- Updates `profiles.is_active`
+
+### 6. Route Updates
+
+- Add `/admin/clients/:id` route in App.tsx
+- Make client rows in ClientsList clickable (link to detail page)
 
 ---
 
-## Phase 3: Client Portal
+## Technical Details
 
-### Client Dashboard
-- Cases grouped by status
-- Upcoming court dates
-- Recent updates/notifications
+### New Files
+- `src/pages/admin/ClientDetail.tsx` — Client detail page with edit form + users section
+- `supabase/functions/invite-user/index.ts` — Edge function to create user accounts server-side (required because client-side can't create users for others)
 
-### Client Cases List
-- Search and filter (only their cases)
+### Modified Files
+- `src/pages/admin/ClientsList.tsx` — Add "New Client" button/dialog, make rows clickable
+- `src/App.tsx` — Add `/admin/clients/:id` route
+- `src/components/admin/AdminSidebar.tsx` — No changes needed (already has Clients nav item)
 
-### Client Case Detail
-- Current status with visual indicator
-- Client-visible milestone timeline only
-- Shared documents (client-visible only)
-- Court dates and events
-- Client updates/notes feed
-- **"Request Update" button** → creates internal notification for admin
+### Edge Function: `invite-user`
+- Accepts: `{ email, full_name, client_id, role }` 
+- Uses service role key to call `supabase.auth.admin.createUser`
+- Updates the profile's `client_id`
+- Inserts into `user_roles` with the `client` role
+- Returns success/error
+- Protected: only callable by authenticated admins (verified via `is_admin()` check)
 
-### Client Profile
-- Basic profile editing (name, contact)
-
----
-
-## Phase 4: Documents, Notifications & Activity
-
-### File Storage
-- Supabase Storage bucket `case-documents`
-- Path pattern: `client/{client_id}/case/{case_id}/{category}/{timestamp}_{filename}`
-- Secure URL generation for client-visible files
-- Internal files never exposed to client users
-
-### Notifications (In-App + Email-Ready)
-- In-app notification bell with unread count
-- Notification triggers: case opened, status change, court date scheduled/changed, new client update, milestone overdue
-- Email notification service abstraction (placeholder functions ready for future integration)
-
-### Activity Logging
-- Automatic logging for: case creation, status changes, milestone completion, document uploads, visibility changes, court events, notes, assignment changes, settings changes
-
----
-
-## Design & UX
-
-- **Professional legal operations dashboard** aesthetic — high trust, clean, minimal clutter
-- Strong status badges with color coding
-- Clear visual hierarchy for fast scanning
-- Clean timeline component for milestones
-- Mobile responsive (especially client portal)
-- Consistent navigation with sidebar for admin, simplified nav for clients
-- Dark/light mode support
-
----
-
-## Erie County / NY Defaults (Pre-loaded)
-
-- Default nonpayment workflow template with 12 milestones
-- Auto-offset days between milestones where applicable
-- Sample courts: Buffalo City Court Housing Part
-- Default notice period: 14 days
-- Reminder offsets: 3 days, 1 day before due dates
-- All fully editable in admin settings
+### Database
+- No schema changes needed — existing tables support everything
+- Clients table already has all address fields, active status
+- Profiles already has `client_id` foreign key
+- User roles table already supports the `client` role
 
