@@ -10,7 +10,9 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Plus, UserCheck, UserX } from "lucide-react";
+import { ArrowLeft, Plus, UserCheck, UserX, Mail, KeyRound } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { MoreHorizontal } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
 
 type Client = Tables<"clients">;
@@ -158,6 +160,24 @@ export default function ClientDetail() {
     }
   }
 
+  async function resendEmail(userId: string, type: "invite" | "recovery") {
+    const { data, error } = await supabase.functions.invoke("resend-user-email", {
+      body: { user_id: userId, type },
+    });
+    if (error || data?.error) {
+      toast({
+        title: "Failed to send email",
+        description: data?.error || error?.message || "Unknown error",
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: type === "invite" ? "Invitation resent" : "Password reset sent",
+        description: "The user will receive an email shortly.",
+      });
+    }
+  }
+
   if (loading) {
     return <div className="flex items-center justify-center py-12 text-muted-foreground">Loading…</div>;
   }
@@ -301,14 +321,25 @@ export default function ClientDetail() {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => toggleUserActive(u.id, u.is_active)}
-                        title={u.is_active ? "Deactivate" : "Activate"}
-                      >
-                        {u.is_active ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
-                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => resendEmail(u.id, "invite")}>
+                            <Mail className="h-4 w-4 mr-2" /> Resend Welcome Email
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => resendEmail(u.id, "recovery")}>
+                            <KeyRound className="h-4 w-4 mr-2" /> Send Password Reset
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => toggleUserActive(u.id, u.is_active)}>
+                            {u.is_active ? <UserX className="h-4 w-4 mr-2" /> : <UserCheck className="h-4 w-4 mr-2" />}
+                            {u.is_active ? "Deactivate" : "Activate"}
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                   </TableRow>
                 ))}
