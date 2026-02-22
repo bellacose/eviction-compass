@@ -28,6 +28,24 @@ export default function Login() {
     setLoading(false);
   };
 
+  const handleForgotPassword = async () => {
+    const email = (document.getElementById("login-email") as HTMLInputElement)?.value;
+    if (!email) {
+      toast({ title: "Enter your email first", variant: "destructive" });
+      return;
+    }
+    setLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setLoading(false);
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Check your email", description: "We sent you a password reset link." });
+    }
+  };
+
   const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
@@ -82,6 +100,15 @@ export default function Login() {
                   <div className="space-y-2">
                     <Label htmlFor="login-password">Password</Label>
                     <Input id="login-password" name="password" type="password" required placeholder="••••••••" />
+                  </div>
+                  <div className="flex justify-end">
+                    <button
+                      type="button"
+                      className="text-xs text-primary hover:underline"
+                      onClick={handleForgotPassword}
+                    >
+                      Forgot password?
+                    </button>
                   </div>
                   <Button type="submit" className="w-full" disabled={loading}>
                     {loading ? "Signing in…" : "Sign In"}
