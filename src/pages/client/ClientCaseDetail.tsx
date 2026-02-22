@@ -5,7 +5,7 @@ import { useAuth } from "@/lib/auth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import StatusBadge from "@/components/StatusBadge";
-import { ArrowLeft, Check, Circle, AlertCircle, MessageSquare } from "lucide-react";
+import { ArrowLeft, Check, Circle, AlertCircle, MessageSquare, Download } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -39,6 +39,15 @@ export default function ClientCaseDetail() {
     };
     load();
   }, [id]);
+
+  const downloadDocument = async (doc: any) => {
+    const { data, error } = await supabase.storage.from("case-documents").createSignedUrl(doc.file_path, 60);
+    if (error || !data?.signedUrl) {
+      toast({ title: "Download failed", description: error?.message || "Could not generate URL", variant: "destructive" });
+      return;
+    }
+    window.open(data.signedUrl, "_blank");
+  };
 
   const requestUpdate = async () => {
     await supabase.from("notifications").insert({
@@ -125,8 +134,16 @@ export default function ClientCaseDetail() {
           <CardContent className="space-y-2">
             {documents.map((d) => (
               <div key={d.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 text-sm">
-                <span>{d.file_name}</span>
-                <Badge variant="outline" className="text-xs">{d.category}</Badge>
+                <div className="flex-1 min-w-0">
+                  <span>{d.file_name}</span>
+                  {d.description && <p className="text-xs text-muted-foreground truncate">{d.description}</p>}
+                </div>
+                <div className="flex items-center gap-2 ml-2">
+                  <Badge variant="outline" className="text-xs">{d.category}</Badge>
+                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => downloadDocument(d)} title="Download">
+                    <Download className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
               </div>
             ))}
           </CardContent>
