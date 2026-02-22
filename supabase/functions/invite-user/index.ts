@@ -97,17 +97,15 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Create the user via admin API (sends invite email)
-    const { data: newUser, error: createError } =
-      await adminClient.auth.admin.createUser({
-        email,
-        email_confirm: false,
-        user_metadata: { full_name },
+    // Invite the user — this creates the account AND sends the invite email
+    const { data: inviteData, error: inviteError } =
+      await adminClient.auth.admin.inviteUserByEmail(email, {
+        data: { full_name },
       });
 
-    if (createError) {
+    if (inviteError) {
       return new Response(
-        JSON.stringify({ error: createError.message }),
+        JSON.stringify({ error: inviteError.message }),
         {
           status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -115,7 +113,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    const userId = newUser.user.id;
+    const userId = inviteData.user.id;
 
     // Update profile with client_id
     await adminClient
@@ -127,12 +125,6 @@ Deno.serve(async (req) => {
     await adminClient.from("user_roles").insert({
       user_id: userId,
       role: "client",
-    });
-
-    // Send password reset so user can set their password
-    await adminClient.auth.admin.generateLink({
-      type: "invite",
-      email,
     });
 
     return new Response(
