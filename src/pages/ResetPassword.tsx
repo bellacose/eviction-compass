@@ -17,18 +17,15 @@ export default function ResetPassword() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Listen for PASSWORD_RECOVERY or invite events
+    // Set up listener FIRST, then check existing session
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event) => {
-        if (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN") {
-          setReady(true);
+      (event, session) => {
+        if (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN" || event === "INITIAL_SESSION") {
+          if (session) setReady(true);
         }
       }
     );
-    // Also check if we already have a session (user clicked invite link)
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) setReady(true);
-    });
+
     return () => subscription.unsubscribe();
   }, []);
 
