@@ -9,13 +9,19 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import StatusBadge from "@/components/StatusBadge";
 import { STATUS_LABELS, MILESTONE_STATUS_COLORS } from "@/lib/case-utils";
-import { ArrowLeft, Check, Circle, AlertCircle, Clock, SkipForward, Upload, Send } from "lucide-react";
+import { ArrowLeft, Check, Circle, AlertCircle, Clock, SkipForward, Upload, Send, Plus, Pencil, Trash2, Download, Eye, EyeOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import CourtEventDialog from "@/components/admin/CourtEventDialog";
+import ServiceRecordDialog from "@/components/admin/ServiceRecordDialog";
+
+const DOCUMENT_CATEGORIES = ["lease", "rent_ledger", "notice", "proof_of_service", "petition_filing", "court_document", "photo", "correspondence", "other"] as const;
 
 export default function CaseDetail() {
   const { id } = useParams();
@@ -31,6 +37,26 @@ export default function CaseDetail() {
   const [newNote, setNewNote] = useState("");
   const [noteType, setNoteType] = useState<"internal" | "client_update">("internal");
   const [loading, setLoading] = useState(true);
+
+  // Court event dialog state
+  const [courtDialogOpen, setCourtDialogOpen] = useState(false);
+  const [editingCourtEvent, setEditingCourtEvent] = useState<any>(null);
+  const [courtSaving, setCourtSaving] = useState(false);
+  const [deleteCourtId, setDeleteCourtId] = useState<string | null>(null);
+
+  // Service record dialog state
+  const [serviceDialogOpen, setServiceDialogOpen] = useState(false);
+  const [editingServiceRecord, setEditingServiceRecord] = useState<any>(null);
+  const [serviceSaving, setServiceSaving] = useState(false);
+  const [deleteServiceId, setDeleteServiceId] = useState<string | null>(null);
+
+  // Upload dialog state
+  const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [uploadCategory, setUploadCategory] = useState<string>("other");
+  const [uploadDescription, setUploadDescription] = useState("");
+  const [uploadVisible, setUploadVisible] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   const load = async () => {
     if (!id) return;
@@ -70,28 +96,101 @@ export default function CaseDetail() {
   const addNote = async () => {
     if (!newNote.trim()) return;
     await supabase.from("case_notes").insert({ case_id: id, note_type: noteType, content: newNote, created_by: user?.id });
-    if (noteType === "client_update" && caseData) {
-      // Create notification for client users (simplified)
-    }
     setNewNote("");
     toast({ title: noteType === "internal" ? "Internal note added" : "Client update posted" });
     load();
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !caseData) return;
-    const filePath = `client/${caseData.client_id}/case/${id}/other/${Date.now()}_${file.name}`;
-    const { error: uploadError } = await supabase.storage.from("case-documents").upload(filePath, file);
+  // --- Court Events CRUD ---
+  const saveCourtEvent = async (data: any) => {
+    setCourtSaving(true);
+    if (editingCourtEvent) {
+      const { error } = await supabase.from("court_events").update(data).eq("id", editingCourtEvent.id);
+      if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); }
+      else { toast({ title: "Court event updated" }); }
+    } else {
+      const { error } = await supabase.from("court_events").insert({ ...data, case_id: id, created_by: user?.id });
+      if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); }
+      else { toast({ title: "Court event added" }); }
+    }
+    setCourtSaving(false);
+    setCourtDialogOpen(false);
+    setEditingCourtEvent(null);
+    load();
+  };
+
+  const deleteCourtEvent = async () => {
+    if (!deleteCourtId) return;
+    await supabase.from("court_events").delete().eq("id", deleteCourtId);
+    toast({ title: "Court event deleted" });
+    setDeleteCourtId(null);
+    load();
+  };
+
+  // --- Service Records CRUD ---
+  const saveServiceRecord = async (data: any) => {
+    setServiceSaving(true);
+    if (editingServiceRecord) {
+      const { error } = await supabase.from("service_records").update(data).eq("id", editingServiceRecord.id);
+      if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); }
+      else { toast({ title: "Service record updated" }); }
+    } else {
+      const { error } = await supabase.from("service_records").insert({ ...data, case_id: id });
+      if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); }
+      else { toast({ title: "Service record added" }); }
+    }
+    setServiceSaving(false);
+    setServiceDialogOpen(false);
+    setEditingServiceRecord(null);
+    load();
+  };
+
+  const deleteServiceRecord = async () => {
+    if (!deleteServiceId) return;
+    await supabase.from("service_records").delete().eq("id", deleteServiceId);
+    toast({ title: "Service record deleted" });
+    setDeleteServiceId(null);
+    load();
+  };
+
+  // --- Document actions ---
+  const handleUpload = async () => {
+    if (!uploadFile || !caseData) return;
+    setUploading(true);
+    const filePath = `client/${caseData.client_id}/case/${id}/${uploadCategory}/${Date.now()}_${uploadFile.name}`;
+    const { error: uploadError } = await supabase.storage.from("case-documents").upload(filePath, uploadFile);
     if (uploadError) {
       toast({ title: "Upload failed", description: uploadError.message, variant: "destructive" });
+      setUploading(false);
       return;
     }
     await supabase.from("documents").insert({
-      case_id: id, file_name: file.name, file_path: filePath, mime_type: file.type,
-      file_size: file.size, uploaded_by: user?.id, category: "other",
+      case_id: id, file_name: uploadFile.name, file_path: filePath, mime_type: uploadFile.type,
+      file_size: uploadFile.size, uploaded_by: user?.id, category: uploadCategory as any,
+      description: uploadDescription || null, visible_to_client: uploadVisible,
     });
     toast({ title: "Document uploaded" });
+    setUploading(false);
+    setUploadDialogOpen(false);
+    setUploadFile(null);
+    setUploadCategory("other");
+    setUploadDescription("");
+    setUploadVisible(false);
+    load();
+  };
+
+  const downloadDocument = async (doc: any) => {
+    const { data, error } = await supabase.storage.from("case-documents").createSignedUrl(doc.file_path, 60);
+    if (error || !data?.signedUrl) {
+      toast({ title: "Download failed", description: error?.message || "Could not generate URL", variant: "destructive" });
+      return;
+    }
+    window.open(data.signedUrl, "_blank");
+  };
+
+  const toggleVisibility = async (doc: any) => {
+    await supabase.from("documents").update({ visible_to_client: !doc.visible_to_client }).eq("id", doc.id);
+    toast({ title: doc.visible_to_client ? "Hidden from client" : "Visible to client" });
     load();
   };
 
@@ -238,12 +337,9 @@ export default function CaseDetail() {
           <Card>
             <CardHeader className="flex-row items-center justify-between">
               <CardTitle className="text-sm">Documents</CardTitle>
-              <Label htmlFor="file-upload" className="cursor-pointer">
-                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90">
-                  <Upload className="h-3 w-3" />Upload
-                </div>
-                <Input id="file-upload" type="file" className="hidden" onChange={handleFileUpload} />
-              </Label>
+              <Button size="sm" onClick={() => setUploadDialogOpen(true)}>
+                <Upload className="h-3 w-3 mr-1" />Upload
+              </Button>
             </CardHeader>
             <CardContent>
               {documents.length === 0 ? (
@@ -252,13 +348,22 @@ export default function CaseDetail() {
                 <div className="space-y-2">
                   {documents.map((d) => (
                     <div key={d.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                      <div>
+                      <div className="min-w-0 flex-1">
                         <span className="text-sm font-medium">{d.file_name}</span>
-                        <div className="flex gap-2 text-xs text-muted-foreground">
+                        {d.description && <p className="text-xs text-muted-foreground truncate">{d.description}</p>}
+                        <div className="flex gap-2 text-xs text-muted-foreground mt-0.5">
                           <Badge variant="outline" className="text-[10px]">{d.category}</Badge>
                           {d.visible_to_client && <Badge variant="outline" className="text-[10px] border-status-success text-status-success">Client visible</Badge>}
                           <span>{d.created_at && format(new Date(d.created_at), "MMM d, yyyy")}</span>
                         </div>
+                      </div>
+                      <div className="flex items-center gap-1 ml-2">
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => toggleVisibility(d)} title={d.visible_to_client ? "Hide from client" : "Show to client"}>
+                          {d.visible_to_client ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5 text-muted-foreground" />}
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => downloadDocument(d)} title="Download">
+                          <Download className="h-3.5 w-3.5" />
+                        </Button>
                       </div>
                     </div>
                   ))}
@@ -271,6 +376,12 @@ export default function CaseDetail() {
         {/* Service Tab */}
         <TabsContent value="service">
           <Card>
+            <CardHeader className="flex-row items-center justify-between">
+              <CardTitle className="text-sm">Service Records</CardTitle>
+              <Button size="sm" onClick={() => { setEditingServiceRecord(null); setServiceDialogOpen(true); }}>
+                <Plus className="h-3 w-3 mr-1" />Add Record
+              </Button>
+            </CardHeader>
             <CardContent className="p-4">
               {serviceRecords.length === 0 ? (
                 <p className="text-sm text-muted-foreground py-4 text-center">No service records</p>
@@ -278,9 +389,20 @@ export default function CaseDetail() {
                 <div className="space-y-3">
                   {serviceRecords.map((s) => (
                     <div key={s.id} className="p-3 rounded-lg bg-muted/50 text-sm space-y-1">
-                      <div className="font-medium">{s.notice_type}</div>
-                      <div className="text-muted-foreground">Method: {s.service_method} | Date: {s.service_date ? format(new Date(s.service_date), "MMM d, yyyy") : "—"}</div>
+                      <div className="flex items-center justify-between">
+                        <div className="font-medium">{s.notice_type}</div>
+                        <div className="flex items-center gap-1">
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setEditingServiceRecord(s); setServiceDialogOpen(true); }}>
+                            <Pencil className="h-3 w-3" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => setDeleteServiceId(s.id)}>
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="text-muted-foreground">Method: {s.service_method?.replace("_", " ")} | Date: {s.service_date ? format(new Date(s.service_date), "MMM d, yyyy") : "—"}</div>
                       {s.served_by && <div className="text-muted-foreground">Served by: {s.served_by}</div>}
+                      {s.mailing_tracking_number && <div className="text-muted-foreground">Tracking: {s.mailing_tracking_number}</div>}
                       {s.notes && <div className="text-muted-foreground">{s.notes}</div>}
                     </div>
                   ))}
@@ -293,6 +415,12 @@ export default function CaseDetail() {
         {/* Court Tab */}
         <TabsContent value="court">
           <Card>
+            <CardHeader className="flex-row items-center justify-between">
+              <CardTitle className="text-sm">Court Events</CardTitle>
+              <Button size="sm" onClick={() => { setEditingCourtEvent(null); setCourtDialogOpen(true); }}>
+                <Plus className="h-3 w-3 mr-1" />Add Event
+              </Button>
+            </CardHeader>
             <CardContent className="p-4">
               {courtEvents.length === 0 ? (
                 <p className="text-sm text-muted-foreground py-4 text-center">No court events</p>
@@ -300,12 +428,23 @@ export default function CaseDetail() {
                 <div className="space-y-3">
                   {courtEvents.map((e) => (
                     <div key={e.id} className="p-3 rounded-lg bg-muted/50 text-sm space-y-1">
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="capitalize text-xs">{e.event_type}</Badge>
-                        <span className="font-medium">{e.court_name}</span>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="capitalize text-xs">{e.event_type}</Badge>
+                          <span className="font-medium">{e.court_name}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setEditingCourtEvent(e); setCourtDialogOpen(true); }}>
+                            <Pencil className="h-3 w-3" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => setDeleteCourtId(e.id)}>
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
                       </div>
                       {e.start_at && <div className="text-muted-foreground">{format(new Date(e.start_at), "MMM d, yyyy 'at' h:mm a")}</div>}
                       {e.location && <div className="text-muted-foreground">{e.location}</div>}
+                      {e.virtual_link && <div><a href={e.virtual_link} target="_blank" rel="noopener noreferrer" className="text-primary underline text-xs">Virtual Link</a></div>}
                       {e.outcome && <div>Outcome: {e.outcome}</div>}
                       {e.notes && <div className="text-muted-foreground">{e.notes}</div>}
                     </div>
@@ -378,6 +517,90 @@ export default function CaseDetail() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Court Event Dialog */}
+      <CourtEventDialog
+        open={courtDialogOpen}
+        onOpenChange={(open) => { setCourtDialogOpen(open); if (!open) setEditingCourtEvent(null); }}
+        onSave={saveCourtEvent}
+        initialData={editingCourtEvent}
+        saving={courtSaving}
+      />
+
+      {/* Service Record Dialog */}
+      <ServiceRecordDialog
+        open={serviceDialogOpen}
+        onOpenChange={(open) => { setServiceDialogOpen(open); if (!open) setEditingServiceRecord(null); }}
+        onSave={saveServiceRecord}
+        initialData={editingServiceRecord}
+        saving={serviceSaving}
+      />
+
+      {/* Delete Court Event Confirmation */}
+      <AlertDialog open={!!deleteCourtId} onOpenChange={() => setDeleteCourtId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Court Event</AlertDialogTitle>
+            <AlertDialogDescription>Are you sure? This action cannot be undone.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={deleteCourtEvent} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Service Record Confirmation */}
+      <AlertDialog open={!!deleteServiceId} onOpenChange={() => setDeleteServiceId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Service Record</AlertDialogTitle>
+            <AlertDialogDescription>Are you sure? This action cannot be undone.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={deleteServiceRecord} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Upload Document Dialog */}
+      <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Upload Document</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <Label className="text-xs">File</Label>
+              <Input type="file" className="text-sm" onChange={(e) => setUploadFile(e.target.files?.[0] || null)} />
+            </div>
+            <div>
+              <Label className="text-xs">Category</Label>
+              <Select value={uploadCategory} onValueChange={setUploadCategory}>
+                <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {DOCUMENT_CATEGORIES.map((c) => (
+                    <SelectItem key={c} value={c} className="capitalize">{c.replace(/_/g, " ")}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-xs">Description (optional)</Label>
+              <Input className="h-9 text-sm" value={uploadDescription} onChange={(e) => setUploadDescription(e.target.value)} />
+            </div>
+            <div className="flex items-center gap-2">
+              <input type="checkbox" id="visible-toggle" checked={uploadVisible} onChange={(e) => setUploadVisible(e.target.checked)} className="rounded" />
+              <Label htmlFor="visible-toggle" className="text-xs cursor-pointer">Visible to client</Label>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" size="sm" onClick={() => setUploadDialogOpen(false)}>Cancel</Button>
+            <Button size="sm" onClick={handleUpload} disabled={!uploadFile || uploading}>{uploading ? "Uploading…" : "Upload"}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
