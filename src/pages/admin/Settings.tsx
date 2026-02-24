@@ -133,7 +133,7 @@ export default function AdminSettings() {
       order_index: idx + 1,
       auto_offset_days: item.auto_offset_days,
       default_client_visible: item.default_client_visible,
-      required_document_category: item.required_document_category,
+      required_document_category: item.required_document_category as any,
     }));
 
     if (rows.length > 0) {
