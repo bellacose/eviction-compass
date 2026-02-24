@@ -14,12 +14,13 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 export default function CasesList() {
   const [cases, setCases] = useState<any[]>([]);
   const [clients, setClients] = useState<any[]>([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [openClosedFilter, setOpenClosedFilter] = useState("all");
   const [clientFilter, setClientFilter] = useState("all");
   const [priorityFilter, setPriorityFilter] = useState("all");
   const [overdueOnly, setOverdueOnly] = useState(false);
@@ -45,7 +46,7 @@ export default function CasesList() {
     load();
   }, []);
 
-  const hasActiveFilters = statusFilter !== "all" || clientFilter !== "all" || priorityFilter !== "all" || overdueOnly;
+  const hasActiveFilters = statusFilter !== "all" || clientFilter !== "all" || priorityFilter !== "all" || overdueOnly || openClosedFilter !== "all";
 
   const clearFilters = () => {
     setSearch("");
@@ -53,7 +54,10 @@ export default function CasesList() {
     setClientFilter("all");
     setPriorityFilter("all");
     setOverdueOnly(false);
+    setOpenClosedFilter("all");
   };
+
+  const isClosed = (status: string) => ["resolved", "closed"].includes(status);
 
   const filtered = cases.filter((c) => {
     const q = search.toLowerCase();
@@ -68,7 +72,12 @@ export default function CasesList() {
     const matchesClient = clientFilter === "all" || c.client_id === clientFilter;
     const matchesPriority = priorityFilter === "all" || c.priority === priorityFilter;
     const matchesOverdue = !overdueOnly || overdueCaseIds.has(c.id);
-    return matchesSearch && matchesStatus && matchesClient && matchesPriority && matchesOverdue;
+    const matchesOpenClosed = 
+      openClosedFilter === "all" || 
+      (openClosedFilter === "open" && !isClosed(c.status)) ||
+      (openClosedFilter === "closed" && isClosed(c.status));
+    
+    return matchesSearch && matchesStatus && matchesClient && matchesPriority && matchesOverdue && matchesOpenClosed;
   });
 
   return (
@@ -92,6 +101,33 @@ export default function CasesList() {
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center space-x-2 bg-muted/50 p-1 rounded-md border">
+              <Button 
+                variant={openClosedFilter === "all" ? "secondary" : "ghost"} 
+                size="sm" 
+                onClick={() => setOpenClosedFilter("all")}
+                className="h-7 text-xs px-2"
+              >
+                All
+              </Button>
+              <Button 
+                variant={openClosedFilter === "open" ? "secondary" : "ghost"} 
+                size="sm" 
+                onClick={() => setOpenClosedFilter("open")}
+                className="h-7 text-xs px-2"
+              >
+                Open
+              </Button>
+              <Button 
+                variant={openClosedFilter === "closed" ? "secondary" : "ghost"} 
+                size="sm" 
+                onClick={() => setOpenClosedFilter("closed")}
+                className="h-7 text-xs px-2"
+              >
+                Closed
+              </Button>
+            </div>
+
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-[160px]">
                 <SelectValue placeholder="All Statuses" />
