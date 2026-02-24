@@ -231,69 +231,81 @@ export default function AdminSettings() {
                         <TableHead>Label</TableHead>
                         <TableHead className="w-24">Key</TableHead>
                         <TableHead className="w-20">Offset</TableHead>
+                        <TableHead className="w-24">Timeline</TableHead>
                         <TableHead className="w-36 hidden md:table-cell">Doc Category</TableHead>
                         <TableHead className="w-16">Visible</TableHead>
                         <TableHead className="w-10"></TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {editItems.map((item, idx) => (
-                        <TableRow key={item.id}>
-                          <TableCell className="text-muted-foreground text-xs">{idx + 1}</TableCell>
-                          <TableCell>
-                            <Input
-                              value={item.label}
-                              onChange={(e) => updateItem(idx, "label", e.target.value)}
-                              className="h-8 text-sm"
-                              placeholder="Milestone label"
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <Input
-                              value={item.milestone_key}
-                              onChange={(e) => updateItem(idx, "milestone_key", e.target.value)}
-                              className="h-8 text-xs font-mono"
-                              placeholder="key"
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <Input
-                              type="number"
-                              value={item.auto_offset_days ?? ""}
-                              onChange={(e) => updateItem(idx, "auto_offset_days", e.target.value ? parseInt(e.target.value) : null)}
-                              className="h-8 text-sm w-16"
-                              placeholder="days"
-                            />
-                          </TableCell>
-                          <TableCell className="hidden md:table-cell">
-                            <Select
-                              value={item.required_document_category || "none"}
-                              onValueChange={(v) => updateItem(idx, "required_document_category", v === "none" ? null : v)}
-                            >
-                              <SelectTrigger className="h-8 text-xs">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="none">None</SelectItem>
-                                {DOC_CATEGORIES.map(c => (
-                                  <SelectItem key={c} value={c}>{c.replace(/_/g, " ")}</SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </TableCell>
-                          <TableCell>
-                            <Checkbox
-                              checked={item.default_client_visible}
-                              onCheckedChange={(v) => updateItem(idx, "default_client_visible", !!v)}
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => removeItem(idx)}>
-                              <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
+                      {(() => {
+                        let runningDays = 0;
+                        return editItems.map((item, idx) => {
+                          runningDays += (item.auto_offset_days || 0);
+                          return (
+                            <TableRow key={item.id}>
+                              <TableCell className="text-muted-foreground text-xs">{idx + 1}</TableCell>
+                              <TableCell>
+                                <Input
+                                  value={item.label}
+                                  onChange={(e) => updateItem(idx, "label", e.target.value)}
+                                  className="h-8 text-sm"
+                                  placeholder="Milestone label"
+                                />
+                              </TableCell>
+                              <TableCell>
+                                <Input
+                                  value={item.milestone_key}
+                                  onChange={(e) => updateItem(idx, "milestone_key", e.target.value)}
+                                  className="h-8 text-xs font-mono"
+                                  placeholder="key"
+                                />
+                              </TableCell>
+                              <TableCell>
+                                <Input
+                                  type="number"
+                                  value={item.auto_offset_days ?? ""}
+                                  onChange={(e) => updateItem(idx, "auto_offset_days", e.target.value ? parseInt(e.target.value) : null)}
+                                  className="h-8 text-sm w-16"
+                                  placeholder="days"
+                                />
+                              </TableCell>
+                              <TableCell>
+                                <span className="text-xs font-medium text-muted-foreground bg-muted px-2 py-1 rounded-md whitespace-nowrap">
+                                  Day {runningDays}
+                                </span>
+                              </TableCell>
+                              <TableCell className="hidden md:table-cell">
+                                <Select
+                                  value={item.required_document_category || "none"}
+                                  onValueChange={(v) => updateItem(idx, "required_document_category", v === "none" ? null : v)}
+                                >
+                                  <SelectTrigger className="h-8 text-xs">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="none">None</SelectItem>
+                                    {DOC_CATEGORIES.map(c => (
+                                      <SelectItem key={c} value={c}>{c.replace(/_/g, " ")}</SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </TableCell>
+                              <TableCell>
+                                <Checkbox
+                                  checked={item.default_client_visible}
+                                  onCheckedChange={(v) => updateItem(idx, "default_client_visible", !!v)}
+                                />
+                              </TableCell>
+                              <TableCell>
+                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => removeItem(idx)}>
+                                  <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        });
+                      })()}
                     </TableBody>
                   </Table>
                   <div className="flex items-center gap-2">
