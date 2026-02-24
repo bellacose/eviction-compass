@@ -20,6 +20,7 @@ export default function CasesList() {
   const [clients, setClients] = useState<any[]>([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [openClosedFilter, setOpenClosedFilter] = useState("all");
   const [clientFilter, setClientFilter] = useState("all");
   const [priorityFilter, setPriorityFilter] = useState("all");
   const [overdueOnly, setOverdueOnly] = useState(false);
