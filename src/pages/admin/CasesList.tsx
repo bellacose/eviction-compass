@@ -101,6 +101,33 @@ export default function CasesList() {
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center space-x-2 bg-muted/50 p-1 rounded-md border">
+              <Button 
+                variant={openClosedFilter === "all" ? "secondary" : "ghost"} 
+                size="sm" 
+                onClick={() => setOpenClosedFilter("all")}
+                className="h-7 text-xs px-2"
+              >
+                All
+              </Button>
+              <Button 
+                variant={openClosedFilter === "open" ? "secondary" : "ghost"} 
+                size="sm" 
+                onClick={() => setOpenClosedFilter("open")}
+                className="h-7 text-xs px-2"
+              >
+                Open
+              </Button>
+              <Button 
+                variant={openClosedFilter === "closed" ? "secondary" : "ghost"} 
+                size="sm" 
+                onClick={() => setOpenClosedFilter("closed")}
+                className="h-7 text-xs px-2"
+              >
+                Closed
+              </Button>
+            </div>
+
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-[160px]">
                 <SelectValue placeholder="All Statuses" />
