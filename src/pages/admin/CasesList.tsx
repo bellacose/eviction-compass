@@ -46,7 +46,7 @@ export default function CasesList() {
     load();
   }, []);
 
-  const hasActiveFilters = statusFilter !== "all" || clientFilter !== "all" || priorityFilter !== "all" || overdueOnly;
+  const hasActiveFilters = statusFilter !== "all" || clientFilter !== "all" || priorityFilter !== "all" || overdueOnly || openClosedFilter !== "all";
 
   const clearFilters = () => {
     setSearch("");
@@ -54,7 +54,10 @@ export default function CasesList() {
     setClientFilter("all");
     setPriorityFilter("all");
     setOverdueOnly(false);
+    setOpenClosedFilter("all");
   };
+
+  const isClosed = (status: string) => ["resolved", "closed"].includes(status);
 
   const filtered = cases.filter((c) => {
     const q = search.toLowerCase();
