@@ -72,7 +72,12 @@ export default function CasesList() {
     const matchesClient = clientFilter === "all" || c.client_id === clientFilter;
     const matchesPriority = priorityFilter === "all" || c.priority === priorityFilter;
     const matchesOverdue = !overdueOnly || overdueCaseIds.has(c.id);
-    return matchesSearch && matchesStatus && matchesClient && matchesPriority && matchesOverdue;
+    const matchesOpenClosed = 
+      openClosedFilter === "all" || 
+      (openClosedFilter === "open" && !isClosed(c.status)) ||
+      (openClosedFilter === "closed" && isClosed(c.status));
+    
+    return matchesSearch && matchesStatus && matchesClient && matchesPriority && matchesOverdue && matchesOpenClosed;
   });
 
   return (
