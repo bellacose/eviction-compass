@@ -18,6 +18,7 @@ import ClientsList from "./pages/admin/ClientsList";
 import ClientDetail from "./pages/admin/ClientDetail";
 import UsersManagement from "./pages/admin/UsersManagement";
 import AdminSettings from "./pages/admin/Settings";
+import CounselList from "./pages/admin/CounselList";
 
 // Client
 import ClientLayout from "./components/client/ClientLayout";
@@ -67,6 +68,7 @@ function AppRoutes() {
           <Route path="cases/:id" element={<CaseDetail />} />
           <Route path="clients" element={<ClientsList />} />
           <Route path="clients/:id" element={<ClientDetail />} />
+          <Route path="counsel" element={<CounselList />} />
           <Route path="users" element={<UsersManagement />} />
           <Route path="settings" element={<AdminSettings />} />
         </Route>

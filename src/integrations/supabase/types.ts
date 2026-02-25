@@ -68,6 +68,57 @@ export type Database = {
           },
         ]
       }
+      case_counsel: {
+        Row: {
+          assigned_at: string
+          case_id: string
+          counsel_id: string
+          created_at: string
+          fee_arrangement: string | null
+          id: string
+          notes: string | null
+          retainer_amount: number | null
+          role: string
+        }
+        Insert: {
+          assigned_at?: string
+          case_id: string
+          counsel_id: string
+          created_at?: string
+          fee_arrangement?: string | null
+          id?: string
+          notes?: string | null
+          retainer_amount?: number | null
+          role?: string
+        }
+        Update: {
+          assigned_at?: string
+          case_id?: string
+          counsel_id?: string
+          created_at?: string
+          fee_arrangement?: string | null
+          id?: string
+          notes?: string | null
+          retainer_amount?: number | null
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "case_counsel_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "case_counsel_counsel_id_fkey"
+            columns: ["counsel_id"]
+            isOneToOne: false
+            referencedRelation: "counsel"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       case_milestones: {
         Row: {
           case_id: string
@@ -370,6 +421,48 @@ export type Database = {
           state?: string | null
           updated_at?: string
           zip?: string | null
+        }
+        Relationships: []
+      }
+      counsel: {
+        Row: {
+          address: string | null
+          attorney_name: string
+          bar_number: string | null
+          created_at: string
+          email: string | null
+          firm_name: string | null
+          id: string
+          is_active: boolean
+          notes: string | null
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          attorney_name: string
+          bar_number?: string | null
+          created_at?: string
+          email?: string | null
+          firm_name?: string | null
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          attorney_name?: string
+          bar_number?: string | null
+          created_at?: string
+          email?: string | null
+          firm_name?: string | null
+          id?: string
+          is_active?: boolean
+          notes?: string | null
+          phone?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
