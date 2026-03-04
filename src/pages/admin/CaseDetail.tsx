@@ -67,7 +67,7 @@ export default function CaseDetail() {
 
   const load = async () => {
     if (!id) return;
-    const [caseRes, milestoneRes, notesRes, courtRes, docsRes, serviceRes, activityRes] = await Promise.all([
+    const [caseRes, milestoneRes, notesRes, courtRes, docsRes, serviceRes, activityRes, ledgerRes] = await Promise.all([
       supabase.from("cases").select("*, clients(company_name, contact_name, email, phone), tenants(full_name, phone, email), properties(address_line1, address_line2, city, state, zip, county)").eq("id", id).single(),
       supabase.from("case_milestones").select("*").eq("case_id", id).order("order_index"),
       supabase.from("case_notes").select("*, profiles(full_name)").eq("case_id", id).order("created_at", { ascending: false }),
