@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import StatusBadge from "@/components/StatusBadge";
 import { STATUS_LABELS, MILESTONE_STATUS_COLORS } from "@/lib/case-utils";
-import { ArrowLeft, Check, Circle, AlertCircle, Clock, SkipForward, Upload, Send, Plus, Pencil, Trash2, Download, Eye, EyeOff } from "lucide-react";
+import { ArrowLeft, Check, Circle, AlertCircle, Clock, SkipForward, Upload, Send, Plus, Pencil, Trash2, Download, Eye, EyeOff, DollarSign } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
