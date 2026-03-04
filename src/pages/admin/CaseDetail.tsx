@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import StatusBadge from "@/components/StatusBadge";
 import { STATUS_LABELS, MILESTONE_STATUS_COLORS } from "@/lib/case-utils";
-import { ArrowLeft, Check, Circle, AlertCircle, Clock, SkipForward, Upload, Send, Plus, Pencil, Trash2, Download, Eye, EyeOff } from "lucide-react";
+import { ArrowLeft, Check, Circle, AlertCircle, Clock, SkipForward, Upload, Send, Plus, Pencil, Trash2, Download, Eye, EyeOff, DollarSign } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -34,7 +34,14 @@ export default function CaseDetail() {
   const [documents, setDocuments] = useState<any[]>([]);
   const [serviceRecords, setServiceRecords] = useState<any[]>([]);
   const [activity, setActivity] = useState<any[]>([]);
+  const [ledgerEntries, setLedgerEntries] = useState<any[]>([]);
   const [newNote, setNewNote] = useState("");
+  
+  // Ledger dialog state
+  const [ledgerDialogOpen, setLedgerDialogOpen] = useState(false);
+  const [editingLedger, setEditingLedger] = useState<any>(null);
+  const [ledgerForm, setLedgerForm] = useState({ entry_date: "", charge_type: "rent", description: "", amount: "" });
+  const [deleteLedgerId, setDeleteLedgerId] = useState<string | null>(null);
   const [noteType, setNoteType] = useState<"internal" | "client_update">("internal");
   const [loading, setLoading] = useState(true);
 
@@ -60,7 +67,7 @@ export default function CaseDetail() {
 
   const load = async () => {
     if (!id) return;
-    const [caseRes, milestoneRes, notesRes, courtRes, docsRes, serviceRes, activityRes] = await Promise.all([
+    const [caseRes, milestoneRes, notesRes, courtRes, docsRes, serviceRes, activityRes, ledgerRes] = await Promise.all([
       supabase.from("cases").select("*, clients(company_name, contact_name, email, phone), tenants(full_name, phone, email), properties(address_line1, address_line2, city, state, zip, county)").eq("id", id).single(),
       supabase.from("case_milestones").select("*").eq("case_id", id).order("order_index"),
       supabase.from("case_notes").select("*, profiles(full_name)").eq("case_id", id).order("created_at", { ascending: false }),
@@ -68,6 +75,7 @@ export default function CaseDetail() {
       supabase.from("documents").select("*").eq("case_id", id).order("created_at", { ascending: false }),
       supabase.from("service_records").select("*").eq("case_id", id).order("service_date"),
       supabase.from("activity_log").select("*, profiles(full_name)").eq("case_id", id).order("created_at", { ascending: false }).limit(50),
+      supabase.from("ledger_entries").select("*").eq("case_id", id).order("entry_date", { ascending: true }),
     ]);
     setCaseData(caseRes.data);
     setMilestones(milestoneRes.data || []);
@@ -76,6 +84,7 @@ export default function CaseDetail() {
     setDocuments(docsRes.data || []);
     setServiceRecords(serviceRes.data || []);
     setActivity(activityRes.data || []);
+    setLedgerEntries((ledgerRes as any).data || []);
     setLoading(false);
   };
 
@@ -258,6 +267,7 @@ export default function CaseDetail() {
           <TabsTrigger value="service">Service</TabsTrigger>
           <TabsTrigger value="court">Court</TabsTrigger>
           <TabsTrigger value="notes">Notes</TabsTrigger>
+          <TabsTrigger value="ledger">Ledger</TabsTrigger>
           <TabsTrigger value="activity">Activity</TabsTrigger>
         </TabsList>
 
@@ -492,6 +502,48 @@ export default function CaseDetail() {
           </Card>
         </TabsContent>
 
+        {/* Ledger Tab */}
+        <TabsContent value="ledger">
+          <Card>
+            <CardHeader className="flex-row items-center justify-between">
+              <CardTitle className="text-sm">Rent & Late Fee Ledger</CardTitle>
+              <Button size="sm" onClick={() => { setEditingLedger(null); setLedgerForm({ entry_date: new Date().toISOString().slice(0, 10), charge_type: "rent", description: "", amount: "" }); setLedgerDialogOpen(true); }}>
+                <Plus className="h-3 w-3 mr-1" />Add Entry
+              </Button>
+            </CardHeader>
+            <CardContent>
+              {ledgerEntries.length === 0 ? (
+                <p className="text-sm text-muted-foreground py-4 text-center">No ledger entries yet</p>
+              ) : (
+                <>
+                  <div className="space-y-1">
+                    {ledgerEntries.map((e) => (
+                      <div key={e.id} className="flex items-center gap-3 py-2 border-b last:border-0 text-sm">
+                        <DollarSign className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                        <span className="text-muted-foreground w-24 shrink-0">{format(new Date(e.entry_date), "MMM d, yyyy")}</span>
+                        <Badge variant="outline" className="text-[10px] capitalize shrink-0">{e.charge_type.replace("_", " ")}</Badge>
+                        <span className="flex-1 truncate">{e.description || "—"}</span>
+                        <span className="font-mono font-medium">${Number(e.amount).toFixed(2)}</span>
+                        <div className="flex gap-1 shrink-0">
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setEditingLedger(e); setLedgerForm({ entry_date: e.entry_date, charge_type: e.charge_type, description: e.description || "", amount: String(e.amount) }); setLedgerDialogOpen(true); }}>
+                            <Pencil className="h-3 w-3" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => setDeleteLedgerId(e.id)}>
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex justify-end pt-3 border-t mt-3">
+                    <div className="text-sm font-medium">Total Owed: <span className="font-mono text-base">${ledgerEntries.reduce((sum: number, e: any) => sum + Number(e.amount), 0).toFixed(2)}</span></div>
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         {/* Activity Tab */}
         <TabsContent value="activity">
           <Card>
@@ -560,6 +612,68 @@ export default function CaseDetail() {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={deleteServiceRecord} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Ledger Entry Dialog */}
+      <Dialog open={ledgerDialogOpen} onOpenChange={setLedgerDialogOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader><DialogTitle>{editingLedger ? "Edit" : "Add"} Ledger Entry</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <Label className="text-xs">Date</Label>
+              <Input type="date" className="h-9 text-sm" value={ledgerForm.entry_date} onChange={(e) => setLedgerForm({ ...ledgerForm, entry_date: e.target.value })} />
+            </div>
+            <div>
+              <Label className="text-xs">Type</Label>
+              <Select value={ledgerForm.charge_type} onValueChange={(v) => setLedgerForm({ ...ledgerForm, charge_type: v })}>
+                <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="rent">Rent</SelectItem>
+                  <SelectItem value="late_fee">Late Fee</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-xs">Amount ($)</Label>
+              <Input type="number" step="0.01" min="0" className="h-9 text-sm" value={ledgerForm.amount} onChange={(e) => setLedgerForm({ ...ledgerForm, amount: e.target.value })} />
+            </div>
+            <div>
+              <Label className="text-xs">Description (optional)</Label>
+              <Input className="h-9 text-sm" value={ledgerForm.description} onChange={(e) => setLedgerForm({ ...ledgerForm, description: e.target.value })} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" size="sm" onClick={() => setLedgerDialogOpen(false)}>Cancel</Button>
+            <Button size="sm" disabled={!ledgerForm.amount || !ledgerForm.entry_date} onClick={async () => {
+              const payload = { case_id: id, entry_date: ledgerForm.entry_date, charge_type: ledgerForm.charge_type, amount: parseFloat(ledgerForm.amount), description: ledgerForm.description || null, created_by: user?.id };
+              if (editingLedger) {
+                const { error } = await supabase.from("ledger_entries").update(payload).eq("id", editingLedger.id);
+                if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
+                toast({ title: "Entry updated" });
+              } else {
+                const { error } = await supabase.from("ledger_entries").insert(payload);
+                if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
+                toast({ title: "Entry added" });
+              }
+              setLedgerDialogOpen(false);
+              load();
+            }}>Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Ledger Entry Confirmation */}
+      <AlertDialog open={!!deleteLedgerId} onOpenChange={() => setDeleteLedgerId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Ledger Entry</AlertDialogTitle>
+            <AlertDialogDescription>Are you sure? This action cannot be undone.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={async () => { await supabase.from("ledger_entries").delete().eq("id", deleteLedgerId); toast({ title: "Entry deleted" }); setDeleteLedgerId(null); load(); }} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
