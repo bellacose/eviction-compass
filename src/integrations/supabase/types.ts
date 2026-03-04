@@ -595,6 +595,57 @@ export type Database = {
           },
         ]
       }
+      ledger_entries: {
+        Row: {
+          amount: number
+          case_id: string
+          charge_type: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          entry_date: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          case_id: string
+          charge_type?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          entry_date?: string
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          case_id?: string
+          charge_type?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          entry_date?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ledger_entries_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ledger_entries_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       milestone_template_items: {
         Row: {
           auto_offset_days: number | null
