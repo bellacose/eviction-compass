@@ -34,7 +34,14 @@ export default function CaseDetail() {
   const [documents, setDocuments] = useState<any[]>([]);
   const [serviceRecords, setServiceRecords] = useState<any[]>([]);
   const [activity, setActivity] = useState<any[]>([]);
+  const [ledgerEntries, setLedgerEntries] = useState<any[]>([]);
   const [newNote, setNewNote] = useState("");
+  
+  // Ledger dialog state
+  const [ledgerDialogOpen, setLedgerDialogOpen] = useState(false);
+  const [editingLedger, setEditingLedger] = useState<any>(null);
+  const [ledgerForm, setLedgerForm] = useState({ entry_date: "", charge_type: "rent", description: "", amount: "" });
+  const [deleteLedgerId, setDeleteLedgerId] = useState<string | null>(null);
   const [noteType, setNoteType] = useState<"internal" | "client_update">("internal");
   const [loading, setLoading] = useState(true);
 
