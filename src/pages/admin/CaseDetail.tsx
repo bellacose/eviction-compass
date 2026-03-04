@@ -616,6 +616,68 @@ export default function CaseDetail() {
         </AlertDialogContent>
       </AlertDialog>
 
+      {/* Ledger Entry Dialog */}
+      <Dialog open={ledgerDialogOpen} onOpenChange={setLedgerDialogOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader><DialogTitle>{editingLedger ? "Edit" : "Add"} Ledger Entry</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <Label className="text-xs">Date</Label>
+              <Input type="date" className="h-9 text-sm" value={ledgerForm.entry_date} onChange={(e) => setLedgerForm({ ...ledgerForm, entry_date: e.target.value })} />
+            </div>
+            <div>
+              <Label className="text-xs">Type</Label>
+              <Select value={ledgerForm.charge_type} onValueChange={(v) => setLedgerForm({ ...ledgerForm, charge_type: v })}>
+                <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="rent">Rent</SelectItem>
+                  <SelectItem value="late_fee">Late Fee</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-xs">Amount ($)</Label>
+              <Input type="number" step="0.01" min="0" className="h-9 text-sm" value={ledgerForm.amount} onChange={(e) => setLedgerForm({ ...ledgerForm, amount: e.target.value })} />
+            </div>
+            <div>
+              <Label className="text-xs">Description (optional)</Label>
+              <Input className="h-9 text-sm" value={ledgerForm.description} onChange={(e) => setLedgerForm({ ...ledgerForm, description: e.target.value })} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" size="sm" onClick={() => setLedgerDialogOpen(false)}>Cancel</Button>
+            <Button size="sm" disabled={!ledgerForm.amount || !ledgerForm.entry_date} onClick={async () => {
+              const payload = { case_id: id, entry_date: ledgerForm.entry_date, charge_type: ledgerForm.charge_type, amount: parseFloat(ledgerForm.amount), description: ledgerForm.description || null, created_by: user?.id };
+              if (editingLedger) {
+                const { error } = await supabase.from("ledger_entries").update(payload).eq("id", editingLedger.id);
+                if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
+                toast({ title: "Entry updated" });
+              } else {
+                const { error } = await supabase.from("ledger_entries").insert(payload);
+                if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
+                toast({ title: "Entry added" });
+              }
+              setLedgerDialogOpen(false);
+              load();
+            }}>Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Ledger Entry Confirmation */}
+      <AlertDialog open={!!deleteLedgerId} onOpenChange={() => setDeleteLedgerId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Ledger Entry</AlertDialogTitle>
+            <AlertDialogDescription>Are you sure? This action cannot be undone.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={async () => { await supabase.from("ledger_entries").delete().eq("id", deleteLedgerId); toast({ title: "Entry deleted" }); setDeleteLedgerId(null); load(); }} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {/* Upload Document Dialog */}
       <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
         <DialogContent className="max-w-md">
