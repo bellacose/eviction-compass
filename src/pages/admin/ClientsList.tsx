@@ -24,6 +24,10 @@ export default function ClientsList() {
     email: "",
     phone: "",
     address_line1: "",
+    address_line2: "",
+    city: "",
+    state: "NY",
+    zip: "",
   });
 
   useEffect(() => {
@@ -31,7 +35,7 @@ export default function ClientsList() {
   }, []);
 
   async function loadClients() {
-    const { data } = await supabase.from("clients").select("*").order("company_name");
+    const { data } = await supabase.from("clients").select("*, profiles(id)").order("company_name");
     setClients(data || []);
   }
 
@@ -47,6 +51,10 @@ export default function ClientsList() {
       email: form.email.trim() || null,
       phone: form.phone.trim() || null,
       address_line1: form.address_line1.trim() || null,
+      address_line2: form.address_line2.trim() || null,
+      city: form.city.trim() || null,
+      state: form.state.trim() || null,
+      zip: form.zip.trim() || null,
     });
     setCreating(false);
     if (error) {
@@ -54,7 +62,7 @@ export default function ClientsList() {
     } else {
       toast({ title: "Client created" });
       setOpen(false);
-      setForm({ company_name: "", contact_name: "", email: "", phone: "", address_line1: "" });
+      setForm({ company_name: "", contact_name: "", email: "", phone: "", address_line1: "", address_line2: "", city: "", state: "NY", zip: "" });
       loadClients();
     }
   }
@@ -98,8 +106,26 @@ export default function ClientsList() {
                 <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
               </div>
               <div className="space-y-2">
-                <Label>Address</Label>
+                <Label>Address Line 1</Label>
                 <Input value={form.address_line1} onChange={(e) => setForm({ ...form, address_line1: e.target.value })} />
+              </div>
+              <div className="space-y-2">
+                <Label>Address Line 2</Label>
+                <Input value={form.address_line2} onChange={(e) => setForm({ ...form, address_line2: e.target.value })} />
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                <div className="space-y-2">
+                  <Label>City</Label>
+                  <Input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label>State</Label>
+                  <Input value={form.state} onChange={(e) => setForm({ ...form, state: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label>ZIP</Label>
+                  <Input value={form.zip} onChange={(e) => setForm({ ...form, zip: e.target.value })} />
+                </div>
               </div>
               <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
@@ -126,6 +152,8 @@ export default function ClientsList() {
                 <TableHead>Contact</TableHead>
                 <TableHead className="hidden md:table-cell">Email</TableHead>
                 <TableHead className="hidden md:table-cell">Phone</TableHead>
+                <TableHead className="hidden lg:table-cell">Location</TableHead>
+                <TableHead className="hidden md:table-cell">Users</TableHead>
                 <TableHead>Status</TableHead>
               </TableRow>
             </TableHeader>
@@ -140,6 +168,12 @@ export default function ClientsList() {
                   <TableCell>{c.contact_name}</TableCell>
                   <TableCell className="hidden md:table-cell text-muted-foreground">{c.email}</TableCell>
                   <TableCell className="hidden md:table-cell text-muted-foreground">{c.phone}</TableCell>
+                  <TableCell className="hidden lg:table-cell text-muted-foreground">
+                    {[c.city, c.state, c.zip].filter(Boolean).join(", ") || "—"}
+                  </TableCell>
+                  <TableCell className="hidden md:table-cell text-muted-foreground">
+                    {(c.profiles as any[])?.length || 0}
+                  </TableCell>
                   <TableCell>
                     <Badge variant={c.is_active ? "default" : "secondary"}>{c.is_active ? "Active" : "Inactive"}</Badge>
                   </TableCell>
