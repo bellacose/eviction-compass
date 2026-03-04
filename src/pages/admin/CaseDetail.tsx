@@ -502,6 +502,48 @@ export default function CaseDetail() {
           </Card>
         </TabsContent>
 
+        {/* Ledger Tab */}
+        <TabsContent value="ledger">
+          <Card>
+            <CardHeader className="flex-row items-center justify-between">
+              <CardTitle className="text-sm">Rent & Late Fee Ledger</CardTitle>
+              <Button size="sm" onClick={() => { setEditingLedger(null); setLedgerForm({ entry_date: new Date().toISOString().slice(0, 10), charge_type: "rent", description: "", amount: "" }); setLedgerDialogOpen(true); }}>
+                <Plus className="h-3 w-3 mr-1" />Add Entry
+              </Button>
+            </CardHeader>
+            <CardContent>
+              {ledgerEntries.length === 0 ? (
+                <p className="text-sm text-muted-foreground py-4 text-center">No ledger entries yet</p>
+              ) : (
+                <>
+                  <div className="space-y-1">
+                    {ledgerEntries.map((e) => (
+                      <div key={e.id} className="flex items-center gap-3 py-2 border-b last:border-0 text-sm">
+                        <DollarSign className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                        <span className="text-muted-foreground w-24 shrink-0">{format(new Date(e.entry_date), "MMM d, yyyy")}</span>
+                        <Badge variant="outline" className="text-[10px] capitalize shrink-0">{e.charge_type.replace("_", " ")}</Badge>
+                        <span className="flex-1 truncate">{e.description || "—"}</span>
+                        <span className="font-mono font-medium">${Number(e.amount).toFixed(2)}</span>
+                        <div className="flex gap-1 shrink-0">
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setEditingLedger(e); setLedgerForm({ entry_date: e.entry_date, charge_type: e.charge_type, description: e.description || "", amount: String(e.amount) }); setLedgerDialogOpen(true); }}>
+                            <Pencil className="h-3 w-3" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => setDeleteLedgerId(e.id)}>
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex justify-end pt-3 border-t mt-3">
+                    <div className="text-sm font-medium">Total Owed: <span className="font-mono text-base">${ledgerEntries.reduce((sum: number, e: any) => sum + Number(e.amount), 0).toFixed(2)}</span></div>
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         {/* Activity Tab */}
         <TabsContent value="activity">
           <Card>
