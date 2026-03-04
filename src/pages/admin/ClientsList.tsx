@@ -24,6 +24,10 @@ export default function ClientsList() {
     email: "",
     phone: "",
     address_line1: "",
+    address_line2: "",
+    city: "",
+    state: "NY",
+    zip: "",
   });
 
   useEffect(() => {
