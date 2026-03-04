@@ -152,6 +152,8 @@ export default function ClientsList() {
                 <TableHead>Contact</TableHead>
                 <TableHead className="hidden md:table-cell">Email</TableHead>
                 <TableHead className="hidden md:table-cell">Phone</TableHead>
+                <TableHead className="hidden lg:table-cell">Location</TableHead>
+                <TableHead className="hidden md:table-cell">Users</TableHead>
                 <TableHead>Status</TableHead>
               </TableRow>
             </TableHeader>
