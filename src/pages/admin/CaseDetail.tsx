@@ -267,6 +267,7 @@ export default function CaseDetail() {
           <TabsTrigger value="service">Service</TabsTrigger>
           <TabsTrigger value="court">Court</TabsTrigger>
           <TabsTrigger value="notes">Notes</TabsTrigger>
+          <TabsTrigger value="ledger">Ledger</TabsTrigger>
           <TabsTrigger value="activity">Activity</TabsTrigger>
         </TabsList>
 
