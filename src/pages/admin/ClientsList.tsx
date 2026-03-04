@@ -106,8 +106,26 @@ export default function ClientsList() {
                 <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
               </div>
               <div className="space-y-2">
-                <Label>Address</Label>
+                <Label>Address Line 1</Label>
                 <Input value={form.address_line1} onChange={(e) => setForm({ ...form, address_line1: e.target.value })} />
+              </div>
+              <div className="space-y-2">
+                <Label>Address Line 2</Label>
+                <Input value={form.address_line2} onChange={(e) => setForm({ ...form, address_line2: e.target.value })} />
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                <div className="space-y-2">
+                  <Label>City</Label>
+                  <Input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label>State</Label>
+                  <Input value={form.state} onChange={(e) => setForm({ ...form, state: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label>ZIP</Label>
+                  <Input value={form.zip} onChange={(e) => setForm({ ...form, zip: e.target.value })} />
+                </div>
               </div>
               <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
