@@ -35,7 +35,7 @@ export default function ClientsList() {
   }, []);
 
   async function loadClients() {
-    const { data } = await supabase.from("clients").select("*").order("company_name");
+    const { data } = await supabase.from("clients").select("*, profiles(id)").order("company_name");
     setClients(data || []);
   }
 
