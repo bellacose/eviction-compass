@@ -51,6 +51,10 @@ export default function ClientsList() {
       email: form.email.trim() || null,
       phone: form.phone.trim() || null,
       address_line1: form.address_line1.trim() || null,
+      address_line2: form.address_line2.trim() || null,
+      city: form.city.trim() || null,
+      state: form.state.trim() || null,
+      zip: form.zip.trim() || null,
     });
     setCreating(false);
     if (error) {
@@ -58,7 +62,7 @@ export default function ClientsList() {
     } else {
       toast({ title: "Client created" });
       setOpen(false);
-      setForm({ company_name: "", contact_name: "", email: "", phone: "", address_line1: "" });
+      setForm({ company_name: "", contact_name: "", email: "", phone: "", address_line1: "", address_line2: "", city: "", state: "NY", zip: "" });
       loadClients();
     }
   }
