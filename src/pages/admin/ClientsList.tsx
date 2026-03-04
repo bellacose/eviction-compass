@@ -168,6 +168,12 @@ export default function ClientsList() {
                   <TableCell>{c.contact_name}</TableCell>
                   <TableCell className="hidden md:table-cell text-muted-foreground">{c.email}</TableCell>
                   <TableCell className="hidden md:table-cell text-muted-foreground">{c.phone}</TableCell>
+                  <TableCell className="hidden lg:table-cell text-muted-foreground">
+                    {[c.city, c.state, c.zip].filter(Boolean).join(", ") || "—"}
+                  </TableCell>
+                  <TableCell className="hidden md:table-cell text-muted-foreground">
+                    {(c.profiles as any[])?.length || 0}
+                  </TableCell>
                   <TableCell>
                     <Badge variant={c.is_active ? "default" : "secondary"}>{c.is_active ? "Active" : "Inactive"}</Badge>
                   </TableCell>
