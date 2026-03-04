@@ -75,6 +75,7 @@ export default function CaseDetail() {
       supabase.from("documents").select("*").eq("case_id", id).order("created_at", { ascending: false }),
       supabase.from("service_records").select("*").eq("case_id", id).order("service_date"),
       supabase.from("activity_log").select("*, profiles(full_name)").eq("case_id", id).order("created_at", { ascending: false }).limit(50),
+      supabase.from("ledger_entries").select("*").eq("case_id", id).order("entry_date", { ascending: true }),
     ]);
     setCaseData(caseRes.data);
     setMilestones(milestoneRes.data || []);
@@ -83,6 +84,7 @@ export default function CaseDetail() {
     setDocuments(docsRes.data || []);
     setServiceRecords(serviceRes.data || []);
     setActivity(activityRes.data || []);
+    setLedgerEntries((ledgerRes as any).data || []);
     setLoading(false);
   };
 
