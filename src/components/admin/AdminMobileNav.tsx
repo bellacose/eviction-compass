@@ -24,7 +24,7 @@ export default function AdminMobileNav() {
     <header className="lg:hidden flex items-center justify-between px-4 py-3 border-b bg-card">
       <Link to="/admin" className="flex items-center gap-2 text-primary">
         <Shield className="h-5 w-5" />
-        <span className="font-bold">EvictFlow</span>
+        <span className="font-bold">Evict OS</span>
       </Link>
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger asChild>
@@ -33,7 +33,7 @@ export default function AdminMobileNav() {
         <SheetContent side="left" className="w-64 p-0">
           <div className="p-5 border-b">
             <span className="flex items-center gap-2 text-primary font-bold">
-              <Shield className="h-5 w-5" />EvictFlow
+              <Shield className="h-5 w-5" />Evict OS
             </span>
           </div>
           <nav className="p-3 space-y-1">

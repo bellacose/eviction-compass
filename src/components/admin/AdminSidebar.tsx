@@ -25,7 +25,7 @@ export default function AdminSidebar() {
       <div className="p-5 border-b border-sidebar-border">
         <Link to="/admin" className="flex items-center gap-2 text-sidebar-primary">
           <Shield className="h-6 w-6" />
-          <span className="text-xl font-bold tracking-tight">EvictFlow</span>
+          <span className="text-xl font-bold tracking-tight">Evict OS</span>
         </Link>
       </div>
 

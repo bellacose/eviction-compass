@@ -20,7 +20,7 @@ export default function ClientLayout() {
         <div className="container flex items-center justify-between h-14 px-4">
           <Link to="/client" className="flex items-center gap-2 text-primary">
             <Shield className="h-5 w-5" />
-            <span className="font-bold">EvictFlow</span>
+            <span className="font-bold">Evict OS</span>
           </Link>
           <nav className="flex items-center gap-1">
             {navItems.map((item) => (

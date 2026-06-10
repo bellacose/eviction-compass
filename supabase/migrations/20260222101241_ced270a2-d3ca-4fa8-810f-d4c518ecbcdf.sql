@@ -1,6 +1,6 @@
 
 -- ===========================================
--- EvictFlow Database Schema - Full Migration
+-- Evict OS Database Schema - Full Migration
 -- ===========================================
 
 -- ========== ENUM TYPES ==========
