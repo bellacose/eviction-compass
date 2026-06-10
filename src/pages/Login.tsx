@@ -76,7 +76,7 @@ export default function Login() {
         <div className="text-center space-y-2">
           <div className="inline-flex items-center gap-2 text-primary">
             <Shield className="h-8 w-8" />
-            <h1 className="text-3xl font-bold tracking-tight">EvictFlow</h1>
+            <h1 className="text-3xl font-bold tracking-tight">Evict OS</h1>
           </div>
           <p className="text-sm text-muted-foreground">Case Management & Client Communication</p>
         </div>
