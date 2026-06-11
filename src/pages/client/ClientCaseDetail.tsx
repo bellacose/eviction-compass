@@ -133,6 +133,37 @@ export default function ClientCaseDetail() {
         </Card>
       )}
 
+      {/* Payment Arrangements */}
+      {(plans.length > 0 || payments.length > 0) && (
+        <Card>
+          <CardHeader><CardTitle className="text-sm">Payment Arrangements</CardTitle></CardHeader>
+          <CardContent className="space-y-3">
+            {plans.map((pl) => (
+              <div key={pl.id} className="p-3 rounded-lg bg-muted/50 text-sm">
+                <div className="font-medium">
+                  {pl.installment_count} × ${Number(pl.installment_amount).toFixed(2)} <span className="text-muted-foreground capitalize">({pl.frequency})</span>
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  Starts {format(new Date(pl.start_date), "MMM d, yyyy")} · Total ${Number(pl.total_amount).toFixed(2)}
+                </div>
+              </div>
+            ))}
+            {payments.length > 0 && (
+              <div className="space-y-1">
+                {payments.map((p) => (
+                  <div key={p.id} className="flex items-center gap-3 py-2 border-b last:border-0 text-sm">
+                    <span className="text-muted-foreground w-24 shrink-0">{format(new Date(p.due_date), "MMM d, yyyy")}</span>
+                    <Badge variant="outline" className="text-[10px] capitalize shrink-0">{p.status}</Badge>
+                    <span className="flex-1 truncate text-muted-foreground">{p.notes || (p.payment_plan_id ? "Plan installment" : "One-off")}</span>
+                    <span className="font-mono font-medium">${Number(p.amount_due).toFixed(2)}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       {/* Documents */}
       {documents.length > 0 && (
         <Card>
