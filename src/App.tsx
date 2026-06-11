@@ -26,6 +26,7 @@ import ClientDashboard from "./pages/client/ClientDashboard";
 import ClientCasesList from "./pages/client/ClientCasesList";
 import ClientCaseDetail from "./pages/client/ClientCaseDetail";
 import ClientProfile from "./pages/client/ClientProfile";
+import ClientPayments from "./pages/client/ClientPayments";
 
 const queryClient = new QueryClient();
 
@@ -80,6 +81,7 @@ function AppRoutes() {
           <Route index element={<ClientDashboard />} />
           <Route path="cases" element={<ClientCasesList />} />
           <Route path="cases/:id" element={<ClientCaseDetail />} />
+          <Route path="payments" element={<ClientPayments />} />
           <Route path="profile" element={<ClientProfile />} />
         </Route>
       )}

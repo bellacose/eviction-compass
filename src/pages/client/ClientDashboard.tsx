@@ -4,10 +4,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import StatusBadge from "@/components/StatusBadge";
 import { format } from "date-fns";
+import { DollarSign } from "lucide-react";
 
 export default function ClientDashboard() {
   const [cases, setCases] = useState<any[]>([]);
   const [courtEvents, setCourtEvents] = useState<any[]>([]);
+  const [upcomingPayments, setUpcomingPayments] = useState<any[]>([]);
 
   useEffect(() => {
     const load = async () => {
@@ -22,6 +24,14 @@ export default function ClientDashboard() {
         .order("start_at")
         .limit(5);
       setCourtEvents(events || []);
+
+      const { data: pays } = await supabase.from("scheduled_payments")
+        .select("*, cases(case_number)")
+        .eq("status", "scheduled")
+        .gte("due_date", new Date().toISOString().slice(0, 10))
+        .order("due_date")
+        .limit(5);
+      setUpcomingPayments(pays || []);
     };
     load();
   }, []);
@@ -40,6 +50,24 @@ export default function ClientDashboard() {
                 <span>{e.court_name}</span>
                 <span className="text-muted-foreground">{e.start_at && format(new Date(e.start_at), "MMM d, yyyy h:mm a")}</span>
               </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
+      {upcomingPayments.length > 0 && (
+        <Card>
+          <CardHeader className="flex-row items-center justify-between space-y-0">
+            <CardTitle className="text-sm flex items-center gap-2"><DollarSign className="h-4 w-4" /> Upcoming Payments</CardTitle>
+            <Link to="/client/payments" className="text-xs text-primary hover:underline">View all</Link>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {upcomingPayments.map((p) => (
+              <Link key={p.id} to={`/client/cases/${p.case_id}`} className="flex items-center justify-between text-sm hover:bg-accent/50 -mx-2 px-2 py-1 rounded">
+                <span className="font-mono">{(p.cases as any)?.case_number}</span>
+                <span className="font-semibold">${Number(p.amount_due).toFixed(2)}</span>
+                <span className="text-muted-foreground">{format(new Date(p.due_date), "MMM d, yyyy")}</span>
+              </Link>
             ))}
           </CardContent>
         </Card>
