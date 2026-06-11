@@ -546,6 +546,11 @@ export default function CaseDetail() {
           </Card>
         </TabsContent>
 
+        {/* Payments Tab */}
+        <TabsContent value="payments">
+          <PaymentPlanPanel caseId={id!} userId={user?.id} />
+        </TabsContent>
+
         {/* Activity Tab */}
         <TabsContent value="activity">
           <Card>
