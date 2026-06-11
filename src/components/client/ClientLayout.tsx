@@ -1,12 +1,13 @@
 import { Outlet, Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
-import { Shield, LayoutDashboard, Briefcase, User, LogOut } from "lucide-react";
+import { Shield, LayoutDashboard, Briefcase, User, LogOut, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { label: "Dashboard", icon: LayoutDashboard, href: "/client" },
   { label: "Cases", icon: Briefcase, href: "/client/cases" },
+  { label: "Payments", icon: DollarSign, href: "/client/payments" },
   { label: "Profile", icon: User, href: "/client/profile" },
 ];
 
