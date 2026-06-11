@@ -300,6 +300,7 @@ export default function CaseDetail() {
                 <div>{(caseData.properties as any)?.address_line1}</div>
                 {(caseData.properties as any)?.address_line2 && <div>{(caseData.properties as any)?.address_line2}</div>}
                 <div className="text-muted-foreground">{(caseData.properties as any)?.city}, {(caseData.properties as any)?.state} {(caseData.properties as any)?.zip}</div>
+                {(caseData.properties as any)?.county && <div className="text-muted-foreground text-xs">{(caseData.properties as any)?.county} County</div>}
               </CardContent>
             </Card>
             <Card>
