@@ -786,6 +786,59 @@ export type Database = {
           },
         ]
       }
+      payment_plans: {
+        Row: {
+          case_id: string
+          created_at: string
+          created_by: string | null
+          frequency: Database["public"]["Enums"]["payment_frequency"]
+          id: string
+          installment_amount: number
+          installment_count: number
+          notes: string | null
+          start_date: string
+          status: Database["public"]["Enums"]["payment_plan_status"]
+          total_amount: number
+          updated_at: string
+        }
+        Insert: {
+          case_id: string
+          created_at?: string
+          created_by?: string | null
+          frequency?: Database["public"]["Enums"]["payment_frequency"]
+          id?: string
+          installment_amount: number
+          installment_count: number
+          notes?: string | null
+          start_date: string
+          status?: Database["public"]["Enums"]["payment_plan_status"]
+          total_amount?: number
+          updated_at?: string
+        }
+        Update: {
+          case_id?: string
+          created_at?: string
+          created_by?: string | null
+          frequency?: Database["public"]["Enums"]["payment_frequency"]
+          id?: string
+          installment_amount?: number
+          installment_count?: number
+          notes?: string | null
+          start_date?: string
+          status?: Database["public"]["Enums"]["payment_plan_status"]
+          total_amount?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_plans_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           client_id: string | null
@@ -870,6 +923,69 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      scheduled_payments: {
+        Row: {
+          amount_due: number
+          amount_paid: number
+          case_id: string
+          created_at: string
+          created_by: string | null
+          due_date: string
+          id: string
+          method: string | null
+          notes: string | null
+          paid_date: string | null
+          payment_plan_id: string | null
+          status: Database["public"]["Enums"]["scheduled_payment_status"]
+          updated_at: string
+        }
+        Insert: {
+          amount_due: number
+          amount_paid?: number
+          case_id: string
+          created_at?: string
+          created_by?: string | null
+          due_date: string
+          id?: string
+          method?: string | null
+          notes?: string | null
+          paid_date?: string | null
+          payment_plan_id?: string | null
+          status?: Database["public"]["Enums"]["scheduled_payment_status"]
+          updated_at?: string
+        }
+        Update: {
+          amount_due?: number
+          amount_paid?: number
+          case_id?: string
+          created_at?: string
+          created_by?: string | null
+          due_date?: string
+          id?: string
+          method?: string | null
+          notes?: string | null
+          paid_date?: string | null
+          payment_plan_id?: string | null
+          status?: Database["public"]["Enums"]["scheduled_payment_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scheduled_payments_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scheduled_payments_payment_plan_id_fkey"
+            columns: ["payment_plan_id"]
+            isOneToOne: false
+            referencedRelation: "payment_plans"
             referencedColumns: ["id"]
           },
         ]
@@ -1080,6 +1196,14 @@ export type Database = {
       note_type: "internal" | "client_update"
       notification_channel: "in_app" | "email"
       notification_status: "queued" | "sent" | "failed" | "read"
+      payment_frequency: "weekly" | "biweekly" | "monthly"
+      payment_plan_status: "active" | "completed" | "cancelled" | "defaulted"
+      scheduled_payment_status:
+        | "scheduled"
+        | "paid"
+        | "partial"
+        | "missed"
+        | "cancelled"
       service_method:
         | "personal"
         | "substituted"
@@ -1251,6 +1375,15 @@ export const Constants = {
       note_type: ["internal", "client_update"],
       notification_channel: ["in_app", "email"],
       notification_status: ["queued", "sent", "failed", "read"],
+      payment_frequency: ["weekly", "biweekly", "monthly"],
+      payment_plan_status: ["active", "completed", "cancelled", "defaulted"],
+      scheduled_payment_status: [
+        "scheduled",
+        "paid",
+        "partial",
+        "missed",
+        "cancelled",
+      ],
       service_method: [
         "personal",
         "substituted",

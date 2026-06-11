@@ -20,22 +20,28 @@ export default function ClientCaseDetail() {
   const [notes, setNotes] = useState<any[]>([]);
   const [courtEvents, setCourtEvents] = useState<any[]>([]);
   const [documents, setDocuments] = useState<any[]>([]);
+  const [plans, setPlans] = useState<any[]>([]);
+  const [payments, setPayments] = useState<any[]>([]);
 
   useEffect(() => {
     if (!id) return;
     const load = async () => {
-      const [caseRes, milestoneRes, notesRes, courtRes, docsRes] = await Promise.all([
+      const [caseRes, milestoneRes, notesRes, courtRes, docsRes, plansRes, paymentsRes] = await Promise.all([
         supabase.from("cases").select("*, properties(address_line1, city, state, zip), tenants(full_name)").eq("id", id).single(),
         supabase.from("case_milestones").select("*").eq("case_id", id).order("order_index"),
         supabase.from("case_notes").select("*, profiles(full_name)").eq("case_id", id).order("created_at", { ascending: false }),
         supabase.from("court_events").select("*").eq("case_id", id).order("start_at"),
         supabase.from("documents").select("*").eq("case_id", id).order("created_at", { ascending: false }),
+        supabase.from("payment_plans").select("*").eq("case_id", id).order("created_at", { ascending: false }),
+        supabase.from("scheduled_payments").select("*").eq("case_id", id).order("due_date"),
       ]);
       setCaseData(caseRes.data);
       setMilestones(milestoneRes.data || []);
       setNotes(notesRes.data || []);
       setCourtEvents(courtRes.data || []);
       setDocuments(docsRes.data || []);
+      setPlans(plansRes.data || []);
+      setPayments(paymentsRes.data || []);
     };
     load();
   }, [id]);
@@ -123,6 +129,37 @@ export default function ClientCaseDetail() {
                 {e.start_at && <div className="text-muted-foreground mt-1">{format(new Date(e.start_at), "MMM d, yyyy 'at' h:mm a")}</div>}
               </div>
             ))}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Payment Arrangements */}
+      {(plans.length > 0 || payments.length > 0) && (
+        <Card>
+          <CardHeader><CardTitle className="text-sm">Payment Arrangements</CardTitle></CardHeader>
+          <CardContent className="space-y-3">
+            {plans.map((pl) => (
+              <div key={pl.id} className="p-3 rounded-lg bg-muted/50 text-sm">
+                <div className="font-medium">
+                  {pl.installment_count} × ${Number(pl.installment_amount).toFixed(2)} <span className="text-muted-foreground capitalize">({pl.frequency})</span>
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  Starts {format(new Date(pl.start_date), "MMM d, yyyy")} · Total ${Number(pl.total_amount).toFixed(2)}
+                </div>
+              </div>
+            ))}
+            {payments.length > 0 && (
+              <div className="space-y-1">
+                {payments.map((p) => (
+                  <div key={p.id} className="flex items-center gap-3 py-2 border-b last:border-0 text-sm">
+                    <span className="text-muted-foreground w-24 shrink-0">{format(new Date(p.due_date), "MMM d, yyyy")}</span>
+                    <Badge variant="outline" className="text-[10px] capitalize shrink-0">{p.status}</Badge>
+                    <span className="flex-1 truncate text-muted-foreground">{p.notes || (p.payment_plan_id ? "Plan installment" : "One-off")}</span>
+                    <span className="font-mono font-medium">${Number(p.amount_due).toFixed(2)}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       )}

@@ -20,6 +20,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import CourtEventDialog from "@/components/admin/CourtEventDialog";
 import ServiceRecordDialog from "@/components/admin/ServiceRecordDialog";
+import PaymentPlanPanel from "@/components/admin/PaymentPlanPanel";
 
 const DOCUMENT_CATEGORIES = ["lease", "rent_ledger", "notice", "proof_of_service", "petition_filing", "court_document", "photo", "correspondence", "other"] as const;
 
@@ -268,6 +269,7 @@ export default function CaseDetail() {
           <TabsTrigger value="court">Court</TabsTrigger>
           <TabsTrigger value="notes">Notes</TabsTrigger>
           <TabsTrigger value="ledger">Ledger</TabsTrigger>
+          <TabsTrigger value="payments">Payments</TabsTrigger>
           <TabsTrigger value="activity">Activity</TabsTrigger>
         </TabsList>
 
@@ -542,6 +544,11 @@ export default function CaseDetail() {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Payments Tab */}
+        <TabsContent value="payments">
+          <PaymentPlanPanel caseId={id!} userId={user?.id} />
         </TabsContent>
 
         {/* Activity Tab */}
