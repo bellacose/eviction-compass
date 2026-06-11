@@ -1,13 +1,13 @@
-let loaderPromise: Promise<typeof google> | null = null;
+let loaderPromise: Promise<any> | null = null;
 
 declare global {
   interface Window {
-    google: typeof google;
+    google: any;
     __lovableInitMap?: () => void;
   }
 }
 
-export function loadGoogleMaps(): Promise<typeof google> {
+export function loadGoogleMaps(): Promise<any> {
   if (typeof window === "undefined") return Promise.reject(new Error("no window"));
   if (window.google?.maps?.places) return Promise.resolve(window.google);
   if (loaderPromise) return loaderPromise;
