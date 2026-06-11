@@ -20,22 +20,28 @@ export default function ClientCaseDetail() {
   const [notes, setNotes] = useState<any[]>([]);
   const [courtEvents, setCourtEvents] = useState<any[]>([]);
   const [documents, setDocuments] = useState<any[]>([]);
+  const [plans, setPlans] = useState<any[]>([]);
+  const [payments, setPayments] = useState<any[]>([]);
 
   useEffect(() => {
     if (!id) return;
     const load = async () => {
-      const [caseRes, milestoneRes, notesRes, courtRes, docsRes] = await Promise.all([
+      const [caseRes, milestoneRes, notesRes, courtRes, docsRes, plansRes, paymentsRes] = await Promise.all([
         supabase.from("cases").select("*, properties(address_line1, city, state, zip), tenants(full_name)").eq("id", id).single(),
         supabase.from("case_milestones").select("*").eq("case_id", id).order("order_index"),
         supabase.from("case_notes").select("*, profiles(full_name)").eq("case_id", id).order("created_at", { ascending: false }),
         supabase.from("court_events").select("*").eq("case_id", id).order("start_at"),
         supabase.from("documents").select("*").eq("case_id", id).order("created_at", { ascending: false }),
+        supabase.from("payment_plans").select("*").eq("case_id", id).order("created_at", { ascending: false }),
+        supabase.from("scheduled_payments").select("*").eq("case_id", id).order("due_date"),
       ]);
       setCaseData(caseRes.data);
       setMilestones(milestoneRes.data || []);
       setNotes(notesRes.data || []);
       setCourtEvents(courtRes.data || []);
       setDocuments(docsRes.data || []);
+      setPlans(plansRes.data || []);
+      setPayments(paymentsRes.data || []);
     };
     load();
   }, [id]);
