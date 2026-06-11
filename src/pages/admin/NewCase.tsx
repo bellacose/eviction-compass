@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft, Plus, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import AddressAutocomplete from "@/components/AddressAutocomplete";
 
 interface TenantForm {
   firstName: string;
@@ -37,6 +38,7 @@ export default function NewCase() {
   const [propertyCity, setPropertyCity] = useState("Buffalo");
   const [propertyState, setPropertyState] = useState("NY");
   const [propertyZip, setPropertyZip] = useState("");
+  const [propertyCounty, setPropertyCounty] = useState("");
   const [tenants, setTenants] = useState<TenantForm[]>([emptyTenant()]);
   const [caseType, setCaseType] = useState("nonpayment");
   const [priority, setPriority] = useState("normal");
@@ -74,7 +76,7 @@ export default function NewCase() {
 
     // Create property
     const { data: property } = await supabase.from("properties").insert({
-      client_id: clientId, address_line1: propertyAddress, city: propertyCity, state: propertyState, zip: propertyZip,
+      client_id: clientId, address_line1: propertyAddress, city: propertyCity, state: propertyState, zip: propertyZip, county: propertyCounty || null,
     }).select().single();
 
     if (!property) {
@@ -182,9 +184,25 @@ export default function NewCase() {
         <Card>
           <CardHeader><CardTitle className="text-sm">Property</CardTitle></CardHeader>
           <CardContent className="space-y-3">
-            <div><Label>Address *</Label><Input value={propertyAddress} onChange={(e) => setPropertyAddress(e.target.value)} required /></div>
-            <div className="grid grid-cols-3 gap-3">
+            <div>
+              <Label>Address *</Label>
+              <AddressAutocomplete
+                value={propertyAddress}
+                onChange={setPropertyAddress}
+                onSelect={(p) => {
+                  setPropertyAddress(p.address_line1);
+                  if (p.city) setPropertyCity(p.city);
+                  if (p.state) setPropertyState(p.state);
+                  if (p.zip) setPropertyZip(p.zip);
+                  if (p.county) setPropertyCounty(p.county);
+                }}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
               <div><Label>City</Label><Input value={propertyCity} onChange={(e) => setPropertyCity(e.target.value)} /></div>
+              <div><Label>County</Label><Input value={propertyCounty} onChange={(e) => setPropertyCounty(e.target.value)} /></div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
               <div><Label>State</Label><Input value={propertyState} onChange={(e) => setPropertyState(e.target.value)} /></div>
               <div><Label>ZIP</Label><Input value={propertyZip} onChange={(e) => setPropertyZip(e.target.value)} /></div>
             </div>
