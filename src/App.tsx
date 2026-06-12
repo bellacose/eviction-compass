@@ -19,6 +19,10 @@ import ClientDetail from "./pages/admin/ClientDetail";
 import UsersManagement from "./pages/admin/UsersManagement";
 import AdminSettings from "./pages/admin/Settings";
 import CounselList from "./pages/admin/CounselList";
+import CollectionsList from "./pages/admin/CollectionsList";
+import NewCollectionMatter from "./pages/admin/NewCollectionMatter";
+import CollectionMatterDetail from "./pages/admin/CollectionMatterDetail";
+import CollectionAgencies from "./pages/admin/CollectionAgencies";
 
 // Client
 import ClientLayout from "./components/client/ClientLayout";
@@ -27,6 +31,8 @@ import ClientCasesList from "./pages/client/ClientCasesList";
 import ClientCaseDetail from "./pages/client/ClientCaseDetail";
 import ClientProfile from "./pages/client/ClientProfile";
 import ClientPayments from "./pages/client/ClientPayments";
+import ClientCollectionsList from "./pages/client/ClientCollectionsList";
+import ClientCollectionDetail from "./pages/client/ClientCollectionDetail";
 
 const queryClient = new QueryClient();
 
@@ -70,6 +76,10 @@ function AppRoutes() {
           <Route path="clients" element={<ClientsList />} />
           <Route path="clients/:id" element={<ClientDetail />} />
           <Route path="counsel" element={<CounselList />} />
+          <Route path="collections" element={<CollectionsList />} />
+          <Route path="collections/new" element={<NewCollectionMatter />} />
+          <Route path="collections/:id" element={<CollectionMatterDetail />} />
+          <Route path="collection-agencies" element={<CollectionAgencies />} />
           <Route path="users" element={<UsersManagement />} />
           <Route path="settings" element={<AdminSettings />} />
         </Route>
@@ -82,6 +92,8 @@ function AppRoutes() {
           <Route path="cases" element={<ClientCasesList />} />
           <Route path="cases/:id" element={<ClientCaseDetail />} />
           <Route path="payments" element={<ClientPayments />} />
+          <Route path="collections" element={<ClientCollectionsList />} />
+          <Route path="collections/:id" element={<ClientCollectionDetail />} />
           <Route path="profile" element={<ClientProfile />} />
         </Route>
       )}
