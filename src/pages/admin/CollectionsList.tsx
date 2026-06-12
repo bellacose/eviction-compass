@@ -51,7 +51,10 @@ export default function CollectionsList() {
           <h1 className="text-2xl font-bold">Collections</h1>
           <p className="text-sm text-muted-foreground">Track and recover money owed</p>
         </div>
-        <Button asChild><Link to="/admin/collections/new"><Plus className="h-4 w-4 mr-2" />New Matter</Link></Button>
+        <div className="flex gap-2">
+          <Button variant="outline" asChild><Link to="/admin/collection-agencies">Agencies</Link></Button>
+          <Button asChild><Link to="/admin/collections/new"><Plus className="h-4 w-4 mr-2" />New Matter</Link></Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
