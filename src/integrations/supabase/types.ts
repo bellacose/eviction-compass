@@ -424,6 +424,252 @@ export type Database = {
         }
         Relationships: []
       }
+      collection_activities: {
+        Row: {
+          activity_at: string
+          activity_type: Database["public"]["Enums"]["collection_activity_type"]
+          content: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          is_internal: boolean
+          matter_id: string
+        }
+        Insert: {
+          activity_at?: string
+          activity_type?: Database["public"]["Enums"]["collection_activity_type"]
+          content?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_internal?: boolean
+          matter_id: string
+        }
+        Update: {
+          activity_at?: string
+          activity_type?: Database["public"]["Enums"]["collection_activity_type"]
+          content?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_internal?: boolean
+          matter_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "collection_activities_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "collection_matters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      collection_agencies: {
+        Row: {
+          address_line1: string | null
+          city: string | null
+          contact_name: string | null
+          created_at: string
+          default_commission_pct: number | null
+          email: string | null
+          id: string
+          is_active: boolean
+          name: string
+          notes: string | null
+          phone: string | null
+          state: string | null
+          updated_at: string
+          zip: string | null
+        }
+        Insert: {
+          address_line1?: string | null
+          city?: string | null
+          contact_name?: string | null
+          created_at?: string
+          default_commission_pct?: number | null
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          notes?: string | null
+          phone?: string | null
+          state?: string | null
+          updated_at?: string
+          zip?: string | null
+        }
+        Update: {
+          address_line1?: string | null
+          city?: string | null
+          contact_name?: string | null
+          created_at?: string
+          default_commission_pct?: number | null
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          state?: string | null
+          updated_at?: string
+          zip?: string | null
+        }
+        Relationships: []
+      }
+      collection_matters: {
+        Row: {
+          agency_commission_pct: number | null
+          agency_id: string | null
+          agency_placed_at: string | null
+          case_id: string | null
+          client_id: string
+          court_costs: number
+          created_at: string
+          created_by: string | null
+          debtor_id: string
+          description: string | null
+          id: string
+          interest_rate: number
+          interest_start_date: string
+          is_active: boolean
+          judgment_date: string | null
+          legal_fees: number
+          matter_number: string | null
+          origin: Database["public"]["Enums"]["collection_origin"]
+          principal: number
+          sold_at: string | null
+          sold_price: number | null
+          sold_to: string | null
+          status: Database["public"]["Enums"]["collection_status"]
+          updated_at: string
+        }
+        Insert: {
+          agency_commission_pct?: number | null
+          agency_id?: string | null
+          agency_placed_at?: string | null
+          case_id?: string | null
+          client_id: string
+          court_costs?: number
+          created_at?: string
+          created_by?: string | null
+          debtor_id: string
+          description?: string | null
+          id?: string
+          interest_rate?: number
+          interest_start_date?: string
+          is_active?: boolean
+          judgment_date?: string | null
+          legal_fees?: number
+          matter_number?: string | null
+          origin?: Database["public"]["Enums"]["collection_origin"]
+          principal?: number
+          sold_at?: string | null
+          sold_price?: number | null
+          sold_to?: string | null
+          status?: Database["public"]["Enums"]["collection_status"]
+          updated_at?: string
+        }
+        Update: {
+          agency_commission_pct?: number | null
+          agency_id?: string | null
+          agency_placed_at?: string | null
+          case_id?: string | null
+          client_id?: string
+          court_costs?: number
+          created_at?: string
+          created_by?: string | null
+          debtor_id?: string
+          description?: string | null
+          id?: string
+          interest_rate?: number
+          interest_start_date?: string
+          is_active?: boolean
+          judgment_date?: string | null
+          legal_fees?: number
+          matter_number?: string | null
+          origin?: Database["public"]["Enums"]["collection_origin"]
+          principal?: number
+          sold_at?: string | null
+          sold_price?: number | null
+          sold_to?: string | null
+          status?: Database["public"]["Enums"]["collection_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "collection_matters_agency_id_fkey"
+            columns: ["agency_id"]
+            isOneToOne: false
+            referencedRelation: "collection_agencies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "collection_matters_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "collection_matters_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "collection_matters_debtor_id_fkey"
+            columns: ["debtor_id"]
+            isOneToOne: false
+            referencedRelation: "debtors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      collection_payments: {
+        Row: {
+          amount: number
+          created_at: string
+          created_by: string | null
+          id: string
+          matter_id: string
+          notes: string | null
+          payment_date: string
+          payment_type: Database["public"]["Enums"]["collection_payment_type"]
+          reference: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          matter_id: string
+          notes?: string | null
+          payment_date?: string
+          payment_type?: Database["public"]["Enums"]["collection_payment_type"]
+          reference?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          matter_id?: string
+          notes?: string | null
+          payment_date?: string
+          payment_type?: Database["public"]["Enums"]["collection_payment_type"]
+          reference?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "collection_payments_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "collection_matters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       counsel: {
         Row: {
           address: string | null
@@ -532,6 +778,84 @@ export type Database = {
           },
         ]
       }
+      debtors: {
+        Row: {
+          address_line1: string | null
+          city: string | null
+          client_id: string
+          company_name: string | null
+          created_at: string
+          created_by: string | null
+          debtor_type: Database["public"]["Enums"]["debtor_type"]
+          dob: string | null
+          email: string | null
+          full_name: string
+          id: string
+          notes: string | null
+          phone: string | null
+          ssn_last4: string | null
+          state: string | null
+          tenant_id: string | null
+          updated_at: string
+          zip: string | null
+        }
+        Insert: {
+          address_line1?: string | null
+          city?: string | null
+          client_id: string
+          company_name?: string | null
+          created_at?: string
+          created_by?: string | null
+          debtor_type?: Database["public"]["Enums"]["debtor_type"]
+          dob?: string | null
+          email?: string | null
+          full_name: string
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          ssn_last4?: string | null
+          state?: string | null
+          tenant_id?: string | null
+          updated_at?: string
+          zip?: string | null
+        }
+        Update: {
+          address_line1?: string | null
+          city?: string | null
+          client_id?: string
+          company_name?: string | null
+          created_at?: string
+          created_by?: string | null
+          debtor_type?: Database["public"]["Enums"]["debtor_type"]
+          dob?: string | null
+          email?: string | null
+          full_name?: string
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          ssn_last4?: string | null
+          state?: string | null
+          tenant_id?: string | null
+          updated_at?: string
+          zip?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "debtors_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "debtors_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       documents: {
         Row: {
           case_id: string
@@ -591,6 +915,65 @@ export type Database = {
             columns: ["uploaded_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      enforcement_actions: {
+        Row: {
+          action_type: Database["public"]["Enums"]["enforcement_type"]
+          amount: number | null
+          created_at: string
+          created_by: string | null
+          filed_date: string | null
+          id: string
+          matter_id: string
+          notes: string | null
+          reference: string | null
+          served_date: string | null
+          status: Database["public"]["Enums"]["enforcement_status"]
+          target_address: string | null
+          target_name: string | null
+          updated_at: string
+        }
+        Insert: {
+          action_type: Database["public"]["Enums"]["enforcement_type"]
+          amount?: number | null
+          created_at?: string
+          created_by?: string | null
+          filed_date?: string | null
+          id?: string
+          matter_id: string
+          notes?: string | null
+          reference?: string | null
+          served_date?: string | null
+          status?: Database["public"]["Enums"]["enforcement_status"]
+          target_address?: string | null
+          target_name?: string | null
+          updated_at?: string
+        }
+        Update: {
+          action_type?: Database["public"]["Enums"]["enforcement_type"]
+          amount?: number | null
+          created_at?: string
+          created_by?: string | null
+          filed_date?: string | null
+          id?: string
+          matter_id?: string
+          notes?: string | null
+          reference?: string | null
+          served_date?: string | null
+          status?: Database["public"]["Enums"]["enforcement_status"]
+          target_address?: string | null
+          target_name?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "enforcement_actions_matter_id_fkey"
+            columns: ["matter_id"]
+            isOneToOne: false
+            referencedRelation: "collection_matters"
             referencedColumns: ["id"]
           },
         ]
@@ -1150,6 +1533,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      collection_matter_balance: {
+        Args: { _matter_id: string }
+        Returns: {
+          accrued_interest: number
+          balance_due: number
+          court_costs: number
+          legal_fees: number
+          payments_total: number
+          principal: number
+          write_offs_total: number
+        }[]
+      }
       get_user_client_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
@@ -1176,11 +1571,51 @@ export type Database = {
         | "resolved"
         | "closed"
         | "on_hold"
+      collection_activity_type:
+        | "note"
+        | "call"
+        | "letter"
+        | "email"
+        | "demand"
+        | "payment_received"
+        | "agency_placement"
+        | "judgment_sale"
+        | "enforcement"
+        | "status_change"
+        | "other"
+      collection_origin:
+        | "money_judgment"
+        | "case_closed_balance"
+        | "skip_tenant"
+        | "manual"
+        | "vendor_debt"
+      collection_payment_type:
+        | "payment"
+        | "adjustment"
+        | "write_off"
+        | "commission"
+        | "court_cost_recovery"
+        | "interest_adjustment"
+      collection_status:
+        | "open"
+        | "in_house"
+        | "placed_with_agency"
+        | "judgment_sold"
+        | "in_enforcement"
+        | "settled"
+        | "written_off"
+        | "paid"
       court_event_type:
         | "hearing"
         | "adjournment"
         | "judgment"
         | "warrant"
+        | "other"
+      debtor_type:
+        | "tenant"
+        | "contractor"
+        | "vendor"
+        | "process_server"
         | "other"
       document_category:
         | "lease"
@@ -1191,6 +1626,21 @@ export type Database = {
         | "court_document"
         | "photo"
         | "correspondence"
+        | "other"
+      enforcement_status:
+        | "drafted"
+        | "filed"
+        | "served"
+        | "active"
+        | "satisfied"
+        | "released"
+        | "closed"
+      enforcement_type:
+        | "wage_garnishment"
+        | "bank_levy"
+        | "property_lien"
+        | "income_execution"
+        | "restraining_notice"
         | "other"
       milestone_status: "pending" | "complete" | "overdue" | "skipped"
       note_type: "internal" | "client_update"
@@ -1353,11 +1803,56 @@ export const Constants = {
         "closed",
         "on_hold",
       ],
+      collection_activity_type: [
+        "note",
+        "call",
+        "letter",
+        "email",
+        "demand",
+        "payment_received",
+        "agency_placement",
+        "judgment_sale",
+        "enforcement",
+        "status_change",
+        "other",
+      ],
+      collection_origin: [
+        "money_judgment",
+        "case_closed_balance",
+        "skip_tenant",
+        "manual",
+        "vendor_debt",
+      ],
+      collection_payment_type: [
+        "payment",
+        "adjustment",
+        "write_off",
+        "commission",
+        "court_cost_recovery",
+        "interest_adjustment",
+      ],
+      collection_status: [
+        "open",
+        "in_house",
+        "placed_with_agency",
+        "judgment_sold",
+        "in_enforcement",
+        "settled",
+        "written_off",
+        "paid",
+      ],
       court_event_type: [
         "hearing",
         "adjournment",
         "judgment",
         "warrant",
+        "other",
+      ],
+      debtor_type: [
+        "tenant",
+        "contractor",
+        "vendor",
+        "process_server",
         "other",
       ],
       document_category: [
@@ -1369,6 +1864,23 @@ export const Constants = {
         "court_document",
         "photo",
         "correspondence",
+        "other",
+      ],
+      enforcement_status: [
+        "drafted",
+        "filed",
+        "served",
+        "active",
+        "satisfied",
+        "released",
+        "closed",
+      ],
+      enforcement_type: [
+        "wage_garnishment",
+        "bank_levy",
+        "property_lien",
+        "income_execution",
+        "restraining_notice",
         "other",
       ],
       milestone_status: ["pending", "complete", "overdue", "skipped"],
