@@ -256,6 +256,9 @@ export default function CaseDetail() {
           {caseData.court_name && (
             <span className="text-sm text-muted-foreground">Court: {caseData.court_name}</span>
           )}
+          <Button size="sm" variant="outline" asChild className="ml-auto">
+            <Link to={`/admin/collections/new?case_id=${id}`}>Send to Collections</Link>
+          </Button>
         </CardContent>
       </Card>
 
