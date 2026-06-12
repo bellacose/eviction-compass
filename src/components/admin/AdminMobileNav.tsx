@@ -2,7 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Menu, Shield, LayoutDashboard, Briefcase, Building2, UserCog, Settings, LogOut, Scale } from "lucide-react";
+import { Menu, Shield, LayoutDashboard, Briefcase, Building2, UserCog, Settings, LogOut, Scale, Banknote } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 
@@ -11,6 +11,7 @@ const navItems = [
   { label: "Cases", icon: Briefcase, href: "/admin/cases" },
   { label: "Clients", icon: Building2, href: "/admin/clients" },
   { label: "Counsel", icon: Scale, href: "/admin/counsel" },
+  { label: "Collections", icon: Banknote, href: "/admin/collections" },
   { label: "Users", icon: UserCog, href: "/admin/users", superAdminOnly: true },
   { label: "Settings", icon: Settings, href: "/admin/settings", superAdminOnly: true },
 ];
