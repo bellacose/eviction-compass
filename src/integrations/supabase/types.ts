@@ -521,79 +521,166 @@ export type Database = {
           agency_commission_pct: number | null
           agency_id: string | null
           agency_placed_at: string | null
+          agency_recall_date: string | null
+          agency_reference_number: string | null
+          assignment_doc_reference: string | null
+          attorney_fees: number | null
           case_id: string | null
           client_id: string
+          closed_date: string | null
+          closure_reason: string | null
           court_costs: number
           created_at: string
           created_by: string | null
           debtor_id: string
+          demand_letter_sent_date: string | null
           description: string | null
+          filing_fees: number | null
           id: string
+          interest_end_date: string | null
+          interest_paid_through: string | null
           interest_rate: number
           interest_start_date: string
           is_active: boolean
           judgment_date: string | null
+          judgment_entered_date: string | null
+          judgment_expiration_date: string | null
+          judgment_renewal_date: string | null
+          last_contact_date: string | null
+          last_payment_date: string | null
           legal_fees: number
           matter_number: string | null
+          next_action_date: string | null
           origin: Database["public"]["Enums"]["collection_origin"]
+          original_account_number: string | null
+          original_creditor: string | null
+          other_fees: number | null
+          placed_with_agency_date: string | null
           principal: number
+          priority: string | null
+          service_fees: number | null
+          settlement_accepted: boolean | null
+          settlement_offer_amount: number | null
+          settlement_terms: string | null
+          sol_expiration_date: string | null
+          sol_state: string | null
           sold_at: string | null
           sold_price: number | null
           sold_to: string | null
           status: Database["public"]["Enums"]["collection_status"]
+          tags: string[] | null
           updated_at: string
+          validation_notice_sent_date: string | null
         }
         Insert: {
           agency_commission_pct?: number | null
           agency_id?: string | null
           agency_placed_at?: string | null
+          agency_recall_date?: string | null
+          agency_reference_number?: string | null
+          assignment_doc_reference?: string | null
+          attorney_fees?: number | null
           case_id?: string | null
           client_id: string
+          closed_date?: string | null
+          closure_reason?: string | null
           court_costs?: number
           created_at?: string
           created_by?: string | null
           debtor_id: string
+          demand_letter_sent_date?: string | null
           description?: string | null
+          filing_fees?: number | null
           id?: string
+          interest_end_date?: string | null
+          interest_paid_through?: string | null
           interest_rate?: number
           interest_start_date?: string
           is_active?: boolean
           judgment_date?: string | null
+          judgment_entered_date?: string | null
+          judgment_expiration_date?: string | null
+          judgment_renewal_date?: string | null
+          last_contact_date?: string | null
+          last_payment_date?: string | null
           legal_fees?: number
           matter_number?: string | null
+          next_action_date?: string | null
           origin?: Database["public"]["Enums"]["collection_origin"]
+          original_account_number?: string | null
+          original_creditor?: string | null
+          other_fees?: number | null
+          placed_with_agency_date?: string | null
           principal?: number
+          priority?: string | null
+          service_fees?: number | null
+          settlement_accepted?: boolean | null
+          settlement_offer_amount?: number | null
+          settlement_terms?: string | null
+          sol_expiration_date?: string | null
+          sol_state?: string | null
           sold_at?: string | null
           sold_price?: number | null
           sold_to?: string | null
           status?: Database["public"]["Enums"]["collection_status"]
+          tags?: string[] | null
           updated_at?: string
+          validation_notice_sent_date?: string | null
         }
         Update: {
           agency_commission_pct?: number | null
           agency_id?: string | null
           agency_placed_at?: string | null
+          agency_recall_date?: string | null
+          agency_reference_number?: string | null
+          assignment_doc_reference?: string | null
+          attorney_fees?: number | null
           case_id?: string | null
           client_id?: string
+          closed_date?: string | null
+          closure_reason?: string | null
           court_costs?: number
           created_at?: string
           created_by?: string | null
           debtor_id?: string
+          demand_letter_sent_date?: string | null
           description?: string | null
+          filing_fees?: number | null
           id?: string
+          interest_end_date?: string | null
+          interest_paid_through?: string | null
           interest_rate?: number
           interest_start_date?: string
           is_active?: boolean
           judgment_date?: string | null
+          judgment_entered_date?: string | null
+          judgment_expiration_date?: string | null
+          judgment_renewal_date?: string | null
+          last_contact_date?: string | null
+          last_payment_date?: string | null
           legal_fees?: number
           matter_number?: string | null
+          next_action_date?: string | null
           origin?: Database["public"]["Enums"]["collection_origin"]
+          original_account_number?: string | null
+          original_creditor?: string | null
+          other_fees?: number | null
+          placed_with_agency_date?: string | null
           principal?: number
+          priority?: string | null
+          service_fees?: number | null
+          settlement_accepted?: boolean | null
+          settlement_offer_amount?: number | null
+          settlement_terms?: string | null
+          sol_expiration_date?: string | null
+          sol_state?: string | null
           sold_at?: string | null
           sold_price?: number | null
           sold_to?: string | null
           status?: Database["public"]["Enums"]["collection_status"]
+          tags?: string[] | null
           updated_at?: string
+          validation_notice_sent_date?: string | null
         }
         Relationships: [
           {
@@ -781,62 +868,167 @@ export type Database = {
       debtors: {
         Row: {
           address_line1: string | null
+          alias: string | null
+          assets: Json | null
+          bank_account_last4: string | null
+          bank_account_type: string | null
+          bank_branch: string | null
+          bank_name: string | null
+          bankruptcy_case_number: string | null
+          bankruptcy_chapter: string | null
+          bankruptcy_filed: boolean | null
+          cease_and_desist: boolean | null
+          cease_and_desist_date: string | null
           city: string | null
           client_id: string
+          co_debtors: Json | null
           company_name: string | null
           created_at: string
           created_by: string | null
+          date_of_birth: string | null
+          dba: string | null
+          debtor_attorney_name: string | null
+          debtor_attorney_phone: string | null
           debtor_type: Database["public"]["Enums"]["debtor_type"]
+          dl_state: string | null
           dob: string | null
+          drivers_license: string | null
+          ein_last4: string | null
           email: string | null
+          email_secondary: string | null
+          employer_address: string | null
+          employer_name: string | null
+          employer_phone: string | null
+          est_wages: number | null
+          forwarding_address: string | null
           full_name: string
           id: string
+          is_active_military: boolean | null
+          job_title: string | null
+          mailing_address: string | null
           notes: string | null
+          pay_frequency: string | null
           phone: string | null
+          phone_secondary: string | null
+          represented_by_attorney: boolean | null
+          skip_trace_date: string | null
+          skip_trace_source: string | null
+          skip_trace_status: string | null
           ssn_last4: string | null
           state: string | null
           tenant_id: string | null
           updated_at: string
+          wages_period: string | null
           zip: string | null
         }
         Insert: {
           address_line1?: string | null
+          alias?: string | null
+          assets?: Json | null
+          bank_account_last4?: string | null
+          bank_account_type?: string | null
+          bank_branch?: string | null
+          bank_name?: string | null
+          bankruptcy_case_number?: string | null
+          bankruptcy_chapter?: string | null
+          bankruptcy_filed?: boolean | null
+          cease_and_desist?: boolean | null
+          cease_and_desist_date?: string | null
           city?: string | null
           client_id: string
+          co_debtors?: Json | null
           company_name?: string | null
           created_at?: string
           created_by?: string | null
+          date_of_birth?: string | null
+          dba?: string | null
+          debtor_attorney_name?: string | null
+          debtor_attorney_phone?: string | null
           debtor_type?: Database["public"]["Enums"]["debtor_type"]
+          dl_state?: string | null
           dob?: string | null
+          drivers_license?: string | null
+          ein_last4?: string | null
           email?: string | null
+          email_secondary?: string | null
+          employer_address?: string | null
+          employer_name?: string | null
+          employer_phone?: string | null
+          est_wages?: number | null
+          forwarding_address?: string | null
           full_name: string
           id?: string
+          is_active_military?: boolean | null
+          job_title?: string | null
+          mailing_address?: string | null
           notes?: string | null
+          pay_frequency?: string | null
           phone?: string | null
+          phone_secondary?: string | null
+          represented_by_attorney?: boolean | null
+          skip_trace_date?: string | null
+          skip_trace_source?: string | null
+          skip_trace_status?: string | null
           ssn_last4?: string | null
           state?: string | null
           tenant_id?: string | null
           updated_at?: string
+          wages_period?: string | null
           zip?: string | null
         }
         Update: {
           address_line1?: string | null
+          alias?: string | null
+          assets?: Json | null
+          bank_account_last4?: string | null
+          bank_account_type?: string | null
+          bank_branch?: string | null
+          bank_name?: string | null
+          bankruptcy_case_number?: string | null
+          bankruptcy_chapter?: string | null
+          bankruptcy_filed?: boolean | null
+          cease_and_desist?: boolean | null
+          cease_and_desist_date?: string | null
           city?: string | null
           client_id?: string
+          co_debtors?: Json | null
           company_name?: string | null
           created_at?: string
           created_by?: string | null
+          date_of_birth?: string | null
+          dba?: string | null
+          debtor_attorney_name?: string | null
+          debtor_attorney_phone?: string | null
           debtor_type?: Database["public"]["Enums"]["debtor_type"]
+          dl_state?: string | null
           dob?: string | null
+          drivers_license?: string | null
+          ein_last4?: string | null
           email?: string | null
+          email_secondary?: string | null
+          employer_address?: string | null
+          employer_name?: string | null
+          employer_phone?: string | null
+          est_wages?: number | null
+          forwarding_address?: string | null
           full_name?: string
           id?: string
+          is_active_military?: boolean | null
+          job_title?: string | null
+          mailing_address?: string | null
           notes?: string | null
+          pay_frequency?: string | null
           phone?: string | null
+          phone_secondary?: string | null
+          represented_by_attorney?: boolean | null
+          skip_trace_date?: string | null
+          skip_trace_source?: string | null
+          skip_trace_status?: string | null
           ssn_last4?: string | null
           state?: string | null
           tenant_id?: string | null
           updated_at?: string
+          wages_period?: string | null
           zip?: string | null
         }
         Relationships: [
@@ -858,14 +1050,16 @@ export type Database = {
       }
       documents: {
         Row: {
-          case_id: string
+          case_id: string | null
           category: Database["public"]["Enums"]["document_category"]
+          collection_matter_id: string | null
           created_at: string
           description: string | null
           file_name: string
           file_path: string
           file_size: number | null
           id: string
+          is_internal: boolean | null
           mime_type: string | null
           updated_at: string
           uploaded_by: string | null
@@ -873,14 +1067,16 @@ export type Database = {
           visible_to_client: boolean
         }
         Insert: {
-          case_id: string
+          case_id?: string | null
           category?: Database["public"]["Enums"]["document_category"]
+          collection_matter_id?: string | null
           created_at?: string
           description?: string | null
           file_name: string
           file_path: string
           file_size?: number | null
           id?: string
+          is_internal?: boolean | null
           mime_type?: string | null
           updated_at?: string
           uploaded_by?: string | null
@@ -888,14 +1084,16 @@ export type Database = {
           visible_to_client?: boolean
         }
         Update: {
-          case_id?: string
+          case_id?: string | null
           category?: Database["public"]["Enums"]["document_category"]
+          collection_matter_id?: string | null
           created_at?: string
           description?: string | null
           file_name?: string
           file_path?: string
           file_size?: number | null
           id?: string
+          is_internal?: boolean | null
           mime_type?: string | null
           updated_at?: string
           uploaded_by?: string | null
@@ -908,6 +1106,13 @@ export type Database = {
             columns: ["case_id"]
             isOneToOne: false
             referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_collection_matter_id_fkey"
+            columns: ["collection_matter_id"]
+            isOneToOne: false
+            referencedRelation: "collection_matters"
             referencedColumns: ["id"]
           },
           {

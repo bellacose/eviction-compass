@@ -38,6 +38,25 @@ export const DEBTOR_TYPES = [
   "tenant","contractor","vendor","process_server","other"
 ] as const;
 
+export const PRIORITY_OPTIONS = ["low","medium","high","urgent"] as const;
+
+export const CLOSURE_REASONS = [
+  "paid_in_full","settled","written_off","uncollectible","bankruptcy",
+  "sol_expired","sold","returned_to_client","other"
+] as const;
+
+export const PAY_FREQUENCIES = [
+  "weekly","biweekly","semimonthly","monthly","other"
+] as const;
+
+export const SKIP_TRACE_STATUSES = [
+  "not_started","in_progress","located","unable_to_locate","stale"
+] as const;
+
+export const BANKRUPTCY_CHAPTERS = ["7","11","13","none"] as const;
+
+export const BANK_ACCOUNT_TYPES = ["checking","savings","business","other"] as const;
+
 export function fmtMoney(n: number | string | null | undefined) {
   const v = Number(n || 0);
   return v.toLocaleString("en-US", { style: "currency", currency: "USD" });
