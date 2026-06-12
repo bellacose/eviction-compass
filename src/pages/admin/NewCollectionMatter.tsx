@@ -33,7 +33,7 @@ export default function NewCollectionMatter() {
     debtor_type: "tenant", full_name: "", email: "", phone: "",
     date_of_birth: "", ssn_last4: "", ein_last4: "", drivers_license: "", dl_state: "",
     alias: "", dba: "", phone_secondary: "", email_secondary: "",
-    address: "", mailing_address: "", forwarding_address: "",
+    address_line1: "", mailing_address: "", forwarding_address: "",
     employer_name: "", employer_address: "", employer_phone: "", job_title: "",
     pay_frequency: "", est_wages: "", wages_period: "monthly",
     bank_name: "", bank_branch: "", bank_account_type: "", bank_account_last4: "",
@@ -105,7 +105,7 @@ export default function NewCollectionMatter() {
       dba: txt(debtor.dba),
       phone_secondary: txt(debtor.phone_secondary),
       email_secondary: txt(debtor.email_secondary),
-      address: txt(debtor.address),
+      address_line1: txt(debtor.address_line1),
       mailing_address: txt(debtor.mailing_address),
       forwarding_address: txt(debtor.forwarding_address),
       employer_name: txt(debtor.employer_name),
@@ -235,7 +235,7 @@ export default function NewCollectionMatter() {
             <Field label="Phone"><Input value={debtor.phone} onChange={(e) => setD("phone", e.target.value)} /></Field>
             <Field label="Phone (secondary)"><Input value={debtor.phone_secondary} onChange={(e) => setD("phone_secondary", e.target.value)} /></Field>
             <div />
-            <Field label="Address" span="md:col-span-3"><Input value={debtor.address} onChange={(e) => setD("address", e.target.value)} /></Field>
+            <Field label="Address" span="md:col-span-3"><Input value={debtor.address_line1} onChange={(e) => setD("address_line1", e.target.value)} /></Field>
             <Field label="Mailing Address" span="md:col-span-3"><Input value={debtor.mailing_address} onChange={(e) => setD("mailing_address", e.target.value)} /></Field>
             <Field label="Forwarding Address" span="md:col-span-3"><Input value={debtor.forwarding_address} onChange={(e) => setD("forwarding_address", e.target.value)} /></Field>
           </AccordionContent>
