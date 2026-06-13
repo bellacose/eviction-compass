@@ -237,22 +237,36 @@ export default function CasesList() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Case ID</TableHead>
-                <TableHead>Client</TableHead>
-                <TableHead className="hidden md:table-cell">Tenant</TableHead>
-                <TableHead className="hidden lg:table-cell">Property</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="hidden md:table-cell">Priority</TableHead>
-                <TableHead className="hidden lg:table-cell">Updated</TableHead>
+                <TableHead className="cursor-pointer select-none" onClick={() => handleSort("case_number")}>
+                  <span className="inline-flex items-center">Case ID<SortIcon column="case_number" /></span>
+                </TableHead>
+                <TableHead className="cursor-pointer select-none" onClick={() => handleSort("client")}>
+                  <span className="inline-flex items-center">Client<SortIcon column="client" /></span>
+                </TableHead>
+                <TableHead className="hidden md:table-cell cursor-pointer select-none" onClick={() => handleSort("tenant")}>
+                  <span className="inline-flex items-center">Tenant<SortIcon column="tenant" /></span>
+                </TableHead>
+                <TableHead className="hidden lg:table-cell cursor-pointer select-none" onClick={() => handleSort("property")}>
+                  <span className="inline-flex items-center">Property<SortIcon column="property" /></span>
+                </TableHead>
+                <TableHead className="cursor-pointer select-none" onClick={() => handleSort("status")}>
+                  <span className="inline-flex items-center">Status<SortIcon column="status" /></span>
+                </TableHead>
+                <TableHead className="hidden md:table-cell cursor-pointer select-none" onClick={() => handleSort("priority")}>
+                  <span className="inline-flex items-center">Priority<SortIcon column="priority" /></span>
+                </TableHead>
+                <TableHead className="hidden lg:table-cell cursor-pointer select-none" onClick={() => handleSort("updated")}>
+                  <span className="inline-flex items-center">Updated<SortIcon column="updated" /></span>
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
                 <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Loading…</TableCell></TableRow>
-              ) : filtered.length === 0 ? (
+              ) : sorted.length === 0 ? (
                 <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">No cases found</TableCell></TableRow>
               ) : (
-                filtered.map((c) => (
+                sorted.map((c) => (
                   <TableRow key={c.id} className="cursor-pointer hover:bg-accent/50" onClick={() => window.location.href = `/admin/cases/${c.id}`}>
                     <TableCell className="font-mono text-sm font-medium">
                       <div className="flex items-center gap-1.5">
@@ -279,7 +293,7 @@ export default function CasesList() {
           </Table>
         </CardContent>
       </Card>
-      <p className="text-xs text-muted-foreground text-right">{filtered.length} of {cases.length} cases shown</p>
+      <p className="text-xs text-muted-foreground text-right">{sorted.length} of {cases.length} cases shown</p>
     </div>
   );
 }
