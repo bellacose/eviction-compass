@@ -8,13 +8,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import StatusBadge from "@/components/StatusBadge";
 import { PRIORITY_COLORS, STATUS_LABELS } from "@/lib/case-utils";
-import { Plus, Search, X, AlertTriangle } from "lucide-react";
+import { Plus, Search, X, AlertTriangle, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+type SortColumn = "case_number" | "client" | "tenant" | "property" | "status" | "priority" | "updated" | null;
+
 export default function CasesList() {
   const [cases, setCases] = useState<any[]>([]);
   const [clients, setClients] = useState<any[]>([]);
@@ -26,6 +27,8 @@ export default function CasesList() {
   const [overdueOnly, setOverdueOnly] = useState(false);
   const [overdueCaseIds, setOverdueCaseIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
+  const [sortColumn, setSortColumn] = useState<SortColumn>("updated");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
 
   useEffect(() => {
     const load = async () => {
@@ -59,6 +62,24 @@ export default function CasesList() {
 
   const isClosed = (status: string) => ["resolved", "closed"].includes(status);
 
+  const handleSort = (column: SortColumn) => {
+    if (sortColumn === column) {
+      setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
+    } else {
+      setSortColumn(column);
+      setSortDirection("asc");
+    }
+  };
+
+  const SortIcon = ({ column }: { column: SortColumn }) => {
+    if (sortColumn !== column) return <ArrowUpDown className="ml-1 h-3 w-3 text-muted-foreground/60" />;
+    return sortDirection === "asc" ? (
+      <ArrowUp className="ml-1 h-3 w-3 text-primary" />
+    ) : (
+      <ArrowDown className="ml-1 h-3 w-3 text-primary" />
+    );
+  };
+
   const filtered = cases.filter((c) => {
     const q = search.toLowerCase();
     const matchesSearch =
@@ -78,6 +99,40 @@ export default function CasesList() {
       (openClosedFilter === "closed" && isClosed(c.status));
     
     return matchesSearch && matchesStatus && matchesClient && matchesPriority && matchesOverdue && matchesOpenClosed;
+  });
+
+  const priorityOrder: Record<string, number> = { low: 0, normal: 1, high: 2 };
+
+  const sorted = [...filtered].sort((a, b) => {
+    if (!sortColumn) return 0;
+    let cmp = 0;
+    switch (sortColumn) {
+      case "case_number":
+        cmp = (a.case_number || "").localeCompare(b.case_number || "");
+        break;
+      case "client":
+        cmp = ((a.clients as any)?.company_name || "").localeCompare((b.clients as any)?.company_name || "");
+        break;
+      case "tenant":
+        cmp = ((a.tenants as any)?.full_name || "").localeCompare((b.tenants as any)?.full_name || "");
+        break;
+      case "property": {
+        const aProp = `${(a.properties as any)?.address_line1 || ""} ${(a.properties as any)?.city || ""}`;
+        const bProp = `${(b.properties as any)?.address_line1 || ""} ${(b.properties as any)?.city || ""}`;
+        cmp = aProp.localeCompare(bProp);
+        break;
+      }
+      case "status":
+        cmp = (a.status || "").localeCompare(b.status || "");
+        break;
+      case "priority":
+        cmp = (priorityOrder[a.priority] ?? 0) - (priorityOrder[b.priority] ?? 0);
+        break;
+      case "updated":
+        cmp = new Date(a.updated_at || 0).getTime() - new Date(b.updated_at || 0).getTime();
+        break;
+    }
+    return sortDirection === "asc" ? cmp : -cmp;
   });
 
   return (
@@ -182,22 +237,36 @@ export default function CasesList() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Case ID</TableHead>
-                <TableHead>Client</TableHead>
-                <TableHead className="hidden md:table-cell">Tenant</TableHead>
-                <TableHead className="hidden lg:table-cell">Property</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="hidden md:table-cell">Priority</TableHead>
-                <TableHead className="hidden lg:table-cell">Updated</TableHead>
+                <TableHead className="cursor-pointer select-none" onClick={() => handleSort("case_number")}>
+                  <span className="inline-flex items-center">Case ID<SortIcon column="case_number" /></span>
+                </TableHead>
+                <TableHead className="cursor-pointer select-none" onClick={() => handleSort("client")}>
+                  <span className="inline-flex items-center">Client<SortIcon column="client" /></span>
+                </TableHead>
+                <TableHead className="hidden md:table-cell cursor-pointer select-none" onClick={() => handleSort("tenant")}>
+                  <span className="inline-flex items-center">Tenant<SortIcon column="tenant" /></span>
+                </TableHead>
+                <TableHead className="hidden lg:table-cell cursor-pointer select-none" onClick={() => handleSort("property")}>
+                  <span className="inline-flex items-center">Property<SortIcon column="property" /></span>
+                </TableHead>
+                <TableHead className="cursor-pointer select-none" onClick={() => handleSort("status")}>
+                  <span className="inline-flex items-center">Status<SortIcon column="status" /></span>
+                </TableHead>
+                <TableHead className="hidden md:table-cell cursor-pointer select-none" onClick={() => handleSort("priority")}>
+                  <span className="inline-flex items-center">Priority<SortIcon column="priority" /></span>
+                </TableHead>
+                <TableHead className="hidden lg:table-cell cursor-pointer select-none" onClick={() => handleSort("updated")}>
+                  <span className="inline-flex items-center">Updated<SortIcon column="updated" /></span>
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
                 <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Loading…</TableCell></TableRow>
-              ) : filtered.length === 0 ? (
+              ) : sorted.length === 0 ? (
                 <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">No cases found</TableCell></TableRow>
               ) : (
-                filtered.map((c) => (
+                sorted.map((c) => (
                   <TableRow key={c.id} className="cursor-pointer hover:bg-accent/50" onClick={() => window.location.href = `/admin/cases/${c.id}`}>
                     <TableCell className="font-mono text-sm font-medium">
                       <div className="flex items-center gap-1.5">
@@ -224,7 +293,7 @@ export default function CasesList() {
           </Table>
         </CardContent>
       </Card>
-      <p className="text-xs text-muted-foreground text-right">{filtered.length} of {cases.length} cases shown</p>
+      <p className="text-xs text-muted-foreground text-right">{sorted.length} of {cases.length} cases shown</p>
     </div>
   );
 }
