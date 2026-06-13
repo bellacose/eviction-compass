@@ -8,13 +8,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import StatusBadge from "@/components/StatusBadge";
 import { PRIORITY_COLORS, STATUS_LABELS } from "@/lib/case-utils";
-import { Plus, Search, X, AlertTriangle } from "lucide-react";
+import { Plus, Search, X, AlertTriangle, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 export default function CasesList() {
   const [cases, setCases] = useState<any[]>([]);
   const [clients, setClients] = useState<any[]>([]);
