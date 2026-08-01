@@ -277,13 +277,26 @@ export type Database = {
           court_case_number: string | null
           court_name: string | null
           created_at: string
+          current_balance: number | null
           eviction_reason: string
           eviction_reason_other: string | null
+          first_unpaid_month: string | null
           hold_reason: string | null
           id: string
+          intake_step: number | null
           is_on_hold: boolean
           jurisdiction_county: string
           jurisdiction_state: string
+          last_payment_date: string | null
+          lq_attorney_retained: boolean | null
+          lq_collection_agency_involved: boolean | null
+          lq_current_occupant: boolean | null
+          lq_judgment_exists: boolean | null
+          lq_known_bankruptcy: boolean | null
+          lq_military_verified: boolean | null
+          lq_notes: string | null
+          lq_tenant_moved: boolean | null
+          matter_type: Database["public"]["Enums"]["matter_type"] | null
           military_verified: boolean
           opened_date: string
           primary_tenant_id: string | null
@@ -291,6 +304,10 @@ export type Database = {
           property_id: string | null
           status: Database["public"]["Enums"]["case_status"]
           sub_status: string | null
+          submitted_at: string | null
+          submitted_by: string | null
+          tenancy_id: string | null
+          unit_id: string | null
           updated_at: string
         }
         Insert: {
@@ -303,13 +320,26 @@ export type Database = {
           court_case_number?: string | null
           court_name?: string | null
           created_at?: string
+          current_balance?: number | null
           eviction_reason?: string
           eviction_reason_other?: string | null
+          first_unpaid_month?: string | null
           hold_reason?: string | null
           id?: string
+          intake_step?: number | null
           is_on_hold?: boolean
           jurisdiction_county?: string
           jurisdiction_state?: string
+          last_payment_date?: string | null
+          lq_attorney_retained?: boolean | null
+          lq_collection_agency_involved?: boolean | null
+          lq_current_occupant?: boolean | null
+          lq_judgment_exists?: boolean | null
+          lq_known_bankruptcy?: boolean | null
+          lq_military_verified?: boolean | null
+          lq_notes?: string | null
+          lq_tenant_moved?: boolean | null
+          matter_type?: Database["public"]["Enums"]["matter_type"] | null
           military_verified?: boolean
           opened_date?: string
           primary_tenant_id?: string | null
@@ -317,6 +347,10 @@ export type Database = {
           property_id?: string | null
           status?: Database["public"]["Enums"]["case_status"]
           sub_status?: string | null
+          submitted_at?: string | null
+          submitted_by?: string | null
+          tenancy_id?: string | null
+          unit_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -329,13 +363,26 @@ export type Database = {
           court_case_number?: string | null
           court_name?: string | null
           created_at?: string
+          current_balance?: number | null
           eviction_reason?: string
           eviction_reason_other?: string | null
+          first_unpaid_month?: string | null
           hold_reason?: string | null
           id?: string
+          intake_step?: number | null
           is_on_hold?: boolean
           jurisdiction_county?: string
           jurisdiction_state?: string
+          last_payment_date?: string | null
+          lq_attorney_retained?: boolean | null
+          lq_collection_agency_involved?: boolean | null
+          lq_current_occupant?: boolean | null
+          lq_judgment_exists?: boolean | null
+          lq_known_bankruptcy?: boolean | null
+          lq_military_verified?: boolean | null
+          lq_notes?: string | null
+          lq_tenant_moved?: boolean | null
+          matter_type?: Database["public"]["Enums"]["matter_type"] | null
           military_verified?: boolean
           opened_date?: string
           primary_tenant_id?: string | null
@@ -343,6 +390,10 @@ export type Database = {
           property_id?: string | null
           status?: Database["public"]["Enums"]["case_status"]
           sub_status?: string | null
+          submitted_at?: string | null
+          submitted_by?: string | null
+          tenancy_id?: string | null
+          unit_id?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -372,6 +423,20 @@ export type Database = {
             columns: ["property_id"]
             isOneToOne: false
             referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cases_tenancy_id_fkey"
+            columns: ["tenancy_id"]
+            isOneToOne: false
+            referencedRelation: "tenancies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cases_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "units"
             referencedColumns: ["id"]
           },
         ]
@@ -1190,9 +1255,12 @@ export type Database = {
           charge_type: string
           created_at: string
           created_by: string | null
+          credit_amount: number
           description: string | null
           entry_date: string
           id: string
+          payment_amount: number
+          sort_order: number
           updated_at: string
         }
         Insert: {
@@ -1201,9 +1269,12 @@ export type Database = {
           charge_type?: string
           created_at?: string
           created_by?: string | null
+          credit_amount?: number
           description?: string | null
           entry_date?: string
           id?: string
+          payment_amount?: number
+          sort_order?: number
           updated_at?: string
         }
         Update: {
@@ -1212,9 +1283,12 @@ export type Database = {
           charge_type?: string
           created_at?: string
           created_by?: string | null
+          credit_amount?: number
           description?: string | null
           entry_date?: string
           id?: string
+          payment_amount?: number
+          sort_order?: number
           updated_at?: string
         }
         Relationships: [
@@ -1230,6 +1304,53 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      matter_events: {
+        Row: {
+          case_id: string
+          created_at: string
+          created_by: string | null
+          detail: string | null
+          event_key: string
+          id: string
+          is_internal: boolean
+          label: string
+          metadata: Json | null
+          occurred_at: string
+        }
+        Insert: {
+          case_id: string
+          created_at?: string
+          created_by?: string | null
+          detail?: string | null
+          event_key: string
+          id?: string
+          is_internal?: boolean
+          label: string
+          metadata?: Json | null
+          occurred_at?: string
+        }
+        Update: {
+          case_id?: string
+          created_at?: string
+          created_by?: string | null
+          detail?: string | null
+          event_key?: string
+          id?: string
+          is_internal?: boolean
+          label?: string
+          metadata?: Json | null
+          occurred_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "matter_events_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
             referencedColumns: ["id"]
           },
         ]
@@ -1670,50 +1791,204 @@ export type Database = {
           },
         ]
       }
+      tenancies: {
+        Row: {
+          client_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          lease_end: string | null
+          lease_start: string | null
+          lease_type: string | null
+          monthly_rent: number | null
+          notes: string | null
+          occupancy_status: Database["public"]["Enums"]["occupancy_status"]
+          property_id: string
+          security_deposit: number | null
+          tenant_id: string
+          unit_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          lease_end?: string | null
+          lease_start?: string | null
+          lease_type?: string | null
+          monthly_rent?: number | null
+          notes?: string | null
+          occupancy_status?: Database["public"]["Enums"]["occupancy_status"]
+          property_id: string
+          security_deposit?: number | null
+          tenant_id: string
+          unit_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          lease_end?: string | null
+          lease_start?: string | null
+          lease_type?: string | null
+          monthly_rent?: number | null
+          notes?: string | null
+          occupancy_status?: Database["public"]["Enums"]["occupancy_status"]
+          property_id?: string
+          security_deposit?: number | null
+          tenant_id?: string
+          unit_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenancies_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tenancies_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tenancies_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tenancies_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tenants: {
         Row: {
+          bank_info: Json
           created_at: string
           date_of_birth: string | null
+          drivers_license: Json
           email: string | null
+          emergency_contacts: Json
+          employment_info: Json
           first_name: string | null
           full_name: string
           id: string
+          identity_info: Json
           last_name: string | null
           mailing_address: string | null
           notes: string | null
           phone: string | null
+          previous_address: Json
           ssn_last4: string | null
+          tenant_references: Json
           updated_at: string
+          vehicles: Json
         }
         Insert: {
+          bank_info?: Json
           created_at?: string
           date_of_birth?: string | null
+          drivers_license?: Json
           email?: string | null
+          emergency_contacts?: Json
+          employment_info?: Json
           first_name?: string | null
           full_name: string
           id?: string
+          identity_info?: Json
           last_name?: string | null
           mailing_address?: string | null
           notes?: string | null
           phone?: string | null
+          previous_address?: Json
           ssn_last4?: string | null
+          tenant_references?: Json
           updated_at?: string
+          vehicles?: Json
         }
         Update: {
+          bank_info?: Json
           created_at?: string
           date_of_birth?: string | null
+          drivers_license?: Json
           email?: string | null
+          emergency_contacts?: Json
+          employment_info?: Json
           first_name?: string | null
           full_name?: string
           id?: string
+          identity_info?: Json
           last_name?: string | null
           mailing_address?: string | null
           notes?: string | null
           phone?: string | null
+          previous_address?: Json
           ssn_last4?: string | null
+          tenant_references?: Json
           updated_at?: string
+          vehicles?: Json
         }
         Relationships: []
+      }
+      units: {
+        Row: {
+          active: boolean
+          bathrooms: number | null
+          bedrooms: number | null
+          created_at: string
+          description: string | null
+          id: string
+          monthly_rent: number | null
+          property_id: string
+          unit_number: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          bathrooms?: number | null
+          bedrooms?: number | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          monthly_rent?: number | null
+          property_id: string
+          unit_number: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          bathrooms?: number | null
+          bedrooms?: number | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          monthly_rent?: number | null
+          property_id?: string
+          unit_number?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "units_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
@@ -1759,6 +2034,8 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_draft_matter_owner: { Args: { _case_id: string }; Returns: boolean }
+      owns_client: { Args: { _client_id: string }; Returns: boolean }
     }
     Enums: {
       app_role: "super_admin" | "admin" | "client"
@@ -1776,6 +2053,8 @@ export type Database = {
         | "resolved"
         | "closed"
         | "on_hold"
+        | "draft"
+        | "attorney_review"
       collection_activity_type:
         | "note"
         | "call"
@@ -1847,10 +2126,22 @@ export type Database = {
         | "income_execution"
         | "restraining_notice"
         | "other"
+      matter_type:
+        | "non_payment"
+        | "holdover"
+        | "lease_violation"
+        | "former_tenant_collection"
+        | "judgment_collection"
+        | "other"
       milestone_status: "pending" | "complete" | "overdue" | "skipped"
       note_type: "internal" | "client_update"
       notification_channel: "in_app" | "email"
       notification_status: "queued" | "sent" | "failed" | "read"
+      occupancy_status:
+        | "current_tenant"
+        | "former_tenant"
+        | "evicted"
+        | "unknown"
       payment_frequency: "weekly" | "biweekly" | "monthly"
       payment_plan_status: "active" | "completed" | "cancelled" | "defaulted"
       scheduled_payment_status:
@@ -2007,6 +2298,8 @@ export const Constants = {
         "resolved",
         "closed",
         "on_hold",
+        "draft",
+        "attorney_review",
       ],
       collection_activity_type: [
         "note",
@@ -2088,10 +2381,24 @@ export const Constants = {
         "restraining_notice",
         "other",
       ],
+      matter_type: [
+        "non_payment",
+        "holdover",
+        "lease_violation",
+        "former_tenant_collection",
+        "judgment_collection",
+        "other",
+      ],
       milestone_status: ["pending", "complete", "overdue", "skipped"],
       note_type: ["internal", "client_update"],
       notification_channel: ["in_app", "email"],
       notification_status: ["queued", "sent", "failed", "read"],
+      occupancy_status: [
+        "current_tenant",
+        "former_tenant",
+        "evicted",
+        "unknown",
+      ],
       payment_frequency: ["weekly", "biweekly", "monthly"],
       payment_plan_status: ["active", "completed", "cancelled", "defaulted"],
       scheduled_payment_status: [

@@ -142,9 +142,14 @@ export default function CasesList() {
           <h1 className="text-2xl font-bold">Cases</h1>
           <p className="text-sm text-muted-foreground">{cases.length} total cases</p>
         </div>
-        <Button asChild>
-          <Link to="/admin/cases/new"><Plus className="h-4 w-4 mr-2" />New Case</Link>
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" asChild>
+            <Link to="/admin/cases/new"><Plus className="h-4 w-4 mr-2" />Quick Case</Link>
+          </Button>
+          <Button asChild>
+            <Link to="/admin/matters/new"><Plus className="h-4 w-4 mr-2" />New Matter</Link>
+          </Button>
+        </div>
       </div>
 
       <Card>

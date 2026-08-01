@@ -14,6 +14,7 @@ import AdminDashboard from "./pages/admin/Dashboard";
 import CasesList from "./pages/admin/CasesList";
 import CaseDetail from "./pages/admin/CaseDetail";
 import NewCase from "./pages/admin/NewCase";
+import MatterIntake from "./pages/MatterIntake";
 import ClientsList from "./pages/admin/ClientsList";
 import ClientDetail from "./pages/admin/ClientDetail";
 import UsersManagement from "./pages/admin/UsersManagement";
@@ -72,6 +73,8 @@ function AppRoutes() {
           <Route index element={<AdminDashboard />} />
           <Route path="cases" element={<CasesList />} />
           <Route path="cases/new" element={<NewCase />} />
+          <Route path="matters/new" element={<MatterIntake />} />
+          <Route path="matters/:id" element={<MatterIntake />} />
           <Route path="cases/:id" element={<CaseDetail />} />
           <Route path="clients" element={<ClientsList />} />
           <Route path="clients/:id" element={<ClientDetail />} />
@@ -91,6 +94,8 @@ function AppRoutes() {
           <Route index element={<ClientDashboard />} />
           <Route path="cases" element={<ClientCasesList />} />
           <Route path="cases/:id" element={<ClientCaseDetail />} />
+          <Route path="matters/new" element={<MatterIntake />} />
+          <Route path="matters/:id" element={<MatterIntake />} />
           <Route path="payments" element={<ClientPayments />} />
           <Route path="collections" element={<ClientCollectionsList />} />
           <Route path="collections/:id" element={<ClientCollectionDetail />} />
