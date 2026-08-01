@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 type SortColumn = "case_number" | "client" | "tenant" | "property" | "status" | "priority" | "updated" | null;
 
 export default function CasesList() {
+  const navigate = useNavigate();
   const [cases, setCases] = useState<any[]>([]);
   const [clients, setClients] = useState<any[]>([]);
   const [search, setSearch] = useState("");
@@ -272,7 +273,11 @@ export default function CasesList() {
                 <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">No cases found</TableCell></TableRow>
               ) : (
                 sorted.map((c) => (
-                  <TableRow key={c.id} className="cursor-pointer hover:bg-accent/50" onClick={() => window.location.href = `/admin/cases/${c.id}`}>
+                  <TableRow
+                    key={c.id}
+                    className="cursor-pointer hover:bg-accent/50"
+                    onClick={() => navigate(c.status === "draft" ? `/admin/matters/${c.id}` : `/admin/cases/${c.id}`)}
+                  >
                     <TableCell className="font-mono text-sm font-medium">
                       <div className="flex items-center gap-1.5">
                         {c.case_number}
