@@ -1444,6 +1444,136 @@ export type Database = {
         }
         Relationships: []
       }
+      notice_rules: {
+        Row: {
+          count_business_days: boolean
+          created_at: string
+          cure_days: number
+          id: string
+          is_active: boolean
+          jurisdiction_county: string
+          jurisdiction_state: string
+          mailing_days_json: Json
+          min_days_before_filing: number
+          notes: string | null
+          notice_kind: Database["public"]["Enums"]["notice_kind"]
+          updated_at: string
+        }
+        Insert: {
+          count_business_days?: boolean
+          created_at?: string
+          cure_days?: number
+          id?: string
+          is_active?: boolean
+          jurisdiction_county?: string
+          jurisdiction_state: string
+          mailing_days_json?: Json
+          min_days_before_filing?: number
+          notes?: string | null
+          notice_kind: Database["public"]["Enums"]["notice_kind"]
+          updated_at?: string
+        }
+        Update: {
+          count_business_days?: boolean
+          created_at?: string
+          cure_days?: number
+          id?: string
+          is_active?: boolean
+          jurisdiction_county?: string
+          jurisdiction_state?: string
+          mailing_days_json?: Json
+          min_days_before_filing?: number
+          notes?: string | null
+          notice_kind?: Database["public"]["Enums"]["notice_kind"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      notices: {
+        Row: {
+          amount_demanded: number
+          amount_overridden: boolean
+          case_id: string
+          computed_amount: number | null
+          created_at: string
+          cure_by_date: string | null
+          document_id: string | null
+          eligible_to_file_date: string | null
+          id: string
+          notes: string | null
+          notice_kind: Database["public"]["Enums"]["notice_kind"]
+          period_through: string | null
+          prepared_by: string | null
+          prepared_date: string
+          served_date: string | null
+          service_method: Database["public"]["Enums"]["service_method"] | null
+          status: Database["public"]["Enums"]["notice_status"]
+          updated_at: string
+        }
+        Insert: {
+          amount_demanded?: number
+          amount_overridden?: boolean
+          case_id: string
+          computed_amount?: number | null
+          created_at?: string
+          cure_by_date?: string | null
+          document_id?: string | null
+          eligible_to_file_date?: string | null
+          id?: string
+          notes?: string | null
+          notice_kind: Database["public"]["Enums"]["notice_kind"]
+          period_through?: string | null
+          prepared_by?: string | null
+          prepared_date?: string
+          served_date?: string | null
+          service_method?: Database["public"]["Enums"]["service_method"] | null
+          status?: Database["public"]["Enums"]["notice_status"]
+          updated_at?: string
+        }
+        Update: {
+          amount_demanded?: number
+          amount_overridden?: boolean
+          case_id?: string
+          computed_amount?: number | null
+          created_at?: string
+          cure_by_date?: string | null
+          document_id?: string | null
+          eligible_to_file_date?: string | null
+          id?: string
+          notes?: string | null
+          notice_kind?: Database["public"]["Enums"]["notice_kind"]
+          period_through?: string | null
+          prepared_by?: string | null
+          prepared_date?: string
+          served_date?: string | null
+          service_method?: Database["public"]["Enums"]["service_method"] | null
+          status?: Database["public"]["Enums"]["notice_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notices_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notices_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notices_prepared_by_fkey"
+            columns: ["prepared_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           case_id: string | null
@@ -1707,6 +1837,7 @@ export type Database = {
           id: string
           mailing_tracking_number: string | null
           notes: string | null
+          notice_id: string | null
           notice_type: string | null
           served_by: string | null
           service_date: string | null
@@ -1721,6 +1852,7 @@ export type Database = {
           id?: string
           mailing_tracking_number?: string | null
           notes?: string | null
+          notice_id?: string | null
           notice_type?: string | null
           served_by?: string | null
           service_date?: string | null
@@ -1735,6 +1867,7 @@ export type Database = {
           id?: string
           mailing_tracking_number?: string | null
           notes?: string | null
+          notice_id?: string | null
           notice_type?: string | null
           served_by?: string | null
           service_date?: string | null
@@ -1755,6 +1888,13 @@ export type Database = {
             columns: ["case_id"]
             isOneToOne: false
             referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_records_notice_id_fkey"
+            columns: ["notice_id"]
+            isOneToOne: false
+            referencedRelation: "notices"
             referencedColumns: ["id"]
           },
         ]
@@ -2013,6 +2153,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_days_skip_weekends: {
+        Args: { _days: number; _start: string }
+        Returns: string
+      }
       collection_matter_balance: {
         Args: { _matter_id: string }
         Returns: {
@@ -2035,6 +2179,10 @@ export type Database = {
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       is_draft_matter_owner: { Args: { _case_id: string }; Returns: boolean }
+      ledger_balance_as_of: {
+        Args: { _as_of?: string; _case_id: string }
+        Returns: number
+      }
       owns_client: { Args: { _client_id: string }; Returns: boolean }
     }
     Enums: {
@@ -2135,6 +2283,19 @@ export type Database = {
         | "other"
       milestone_status: "pending" | "complete" | "overdue" | "skipped"
       note_type: "internal" | "client_update"
+      notice_kind:
+        | "five_day_late"
+        | "fourteen_day_demand"
+        | "notice_to_quit"
+        | "other"
+      notice_status:
+        | "draft"
+        | "issued"
+        | "served"
+        | "cure_running"
+        | "ripe"
+        | "cured"
+        | "withdrawn"
       notification_channel: "in_app" | "email"
       notification_status: "queued" | "sent" | "failed" | "read"
       occupancy_status:
@@ -2391,6 +2552,21 @@ export const Constants = {
       ],
       milestone_status: ["pending", "complete", "overdue", "skipped"],
       note_type: ["internal", "client_update"],
+      notice_kind: [
+        "five_day_late",
+        "fourteen_day_demand",
+        "notice_to_quit",
+        "other",
+      ],
+      notice_status: [
+        "draft",
+        "issued",
+        "served",
+        "cure_running",
+        "ripe",
+        "cured",
+        "withdrawn",
+      ],
       notification_channel: ["in_app", "email"],
       notification_status: ["queued", "sent", "failed", "read"],
       occupancy_status: [

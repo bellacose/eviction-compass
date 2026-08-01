@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { AlertTriangle, Plus, Trash2, GripVertical, Save } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import NoticeRulesPanel from "@/components/admin/NoticeRulesPanel";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -164,6 +165,7 @@ export default function AdminSettings() {
         <TabsList>
           <TabsTrigger value="defaults">Jurisdiction Defaults</TabsTrigger>
           <TabsTrigger value="templates">Milestone Templates</TabsTrigger>
+          <TabsTrigger value="notices">Notice Rules</TabsTrigger>
           <TabsTrigger value="disclaimer">Legal Disclaimer</TabsTrigger>
         </TabsList>
 
@@ -320,6 +322,10 @@ export default function AdminSettings() {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="notices">
+          <NoticeRulesPanel />
         </TabsContent>
 
         <TabsContent value="disclaimer">
