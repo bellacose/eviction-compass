@@ -350,9 +350,13 @@ export default function CaseDetail() {
           </Card>
         </TabsContent>
 
+        {/* Notices Tab */}
+        <TabsContent value="notices">
+          <NoticesPanel caseId={id!} userId={user?.id} />
+        </TabsContent>
+
         {/* Documents Tab */}
         <TabsContent value="documents">
-        {/* placeholder-anchor */}
           <Card>
             <CardHeader className="flex-row items-center justify-between">
               <CardTitle className="text-sm">Documents</CardTitle>
