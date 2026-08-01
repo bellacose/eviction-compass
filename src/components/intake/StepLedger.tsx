@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Trash2 } from "lucide-react";
-import { formatCurrency } from "@/lib/matter";
+import { formatCurrency, logMatterEvent } from "@/lib/matter";
 import {
   ledgerBalanceIssue,
   ledgerTotals,
@@ -34,7 +34,7 @@ const blankRow = (): Row => ({
   credit_amount: "",
 });
 
-export default function StepLedger({ matter, save, next, back }: StepProps) {
+export default function StepLedger({ matter, save, next, back, onTimelineChange }: StepProps) {
   const { toast } = useToast();
   const [rows, setRows] = useState<Row[]>([]);
   const [deleted, setDeleted] = useState<string[]>([]);
@@ -91,6 +91,9 @@ export default function StepLedger({ matter, save, next, back }: StepProps) {
       return false;
     }
     setSaving(true);
+    const added = rows.filter((r) => !r.id).length;
+    const updated = rows.filter((r) => r.id).length;
+    const removed = deleted.length;
     if (deleted.length) await supabase.from("ledger_entries").delete().in("id", deleted);
     const { data: auth } = await supabase.auth.getUser();
     for (let i = 0; i < rows.length; i++) {
@@ -111,6 +114,14 @@ export default function StepLedger({ matter, save, next, back }: StepProps) {
     }
     setDeleted([]);
     await save({ current_balance: balance });
+    await logMatterEvent({
+      caseId,
+      eventKey: "ledger_updated",
+      label: "Rent ledger updated",
+      detail: `${added} line(s) added, ${updated} kept, ${removed} removed — balance ${formatCurrency(balance)}`,
+      metadata: { charges: totalCharges, payments: totalPayments, balance, lines: rows.length },
+    });
+    onTimelineChange?.();
     await load();
     setSaving(false);
     return true;
