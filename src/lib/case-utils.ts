@@ -1,4 +1,6 @@
 export const STATUS_LABELS: Record<string, string> = {
+  draft: "Draft Intake",
+  attorney_review: "Attorney Review",
   intake: "Intake",
   notice_preparation: "Notice Prep",
   notice_served: "Notice Served",
@@ -14,6 +16,8 @@ export const STATUS_LABELS: Record<string, string> = {
 };
 
 export const STATUS_COLORS: Record<string, string> = {
+  draft: "bg-muted text-muted-foreground border-border",
+  attorney_review: "bg-status-info/15 text-status-info border-status-info/30",
   intake: "bg-status-info/15 text-status-info border-status-info/30",
   notice_preparation: "bg-status-warning/15 text-status-warning border-status-warning/30",
   notice_served: "bg-status-warning/15 text-status-warning border-status-warning/30",
