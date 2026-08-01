@@ -21,6 +21,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import CourtEventDialog from "@/components/admin/CourtEventDialog";
 import ServiceRecordDialog from "@/components/admin/ServiceRecordDialog";
 import PaymentPlanPanel from "@/components/admin/PaymentPlanPanel";
+import NoticesPanel from "@/components/admin/NoticesPanel";
 
 const DOCUMENT_CATEGORIES = ["lease", "rent_ledger", "notice", "proof_of_service", "petition_filing", "court_document", "photo", "correspondence", "other"] as const;
 
@@ -268,6 +269,7 @@ export default function CaseDetail() {
           <TabsTrigger value="summary">Summary</TabsTrigger>
           <TabsTrigger value="timeline">Timeline</TabsTrigger>
           <TabsTrigger value="documents">Documents</TabsTrigger>
+          <TabsTrigger value="notices">Notices</TabsTrigger>
           <TabsTrigger value="service">Service</TabsTrigger>
           <TabsTrigger value="court">Court</TabsTrigger>
           <TabsTrigger value="notes">Notes</TabsTrigger>
