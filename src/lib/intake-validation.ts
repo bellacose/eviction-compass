@@ -19,6 +19,55 @@ export function validate<T extends z.ZodTypeAny>(
 
 const today = () => new Date().toISOString().slice(0, 10);
 
+/** Human-readable names for every field the intake steps validate. */
+export const FIELD_LABELS: Record<string, string> = {
+  address_line1: "Street address",
+  address_line2: "Address line 2",
+  city: "City",
+  state: "State",
+  zip: "ZIP code",
+  county: "County",
+  unit_number: "Unit number",
+  bedrooms: "Bedrooms",
+  bathrooms: "Bathrooms",
+  monthly_rent: "Monthly rent",
+  description: "Description",
+  first_name: "First name",
+  last_name: "Last name",
+  phone: "Phone",
+  email: "Email",
+  ssn_last4: "SSN (last 4)",
+  date_of_birth: "Date of birth",
+  lease_type: "Lease type",
+  lease_start: "Lease start",
+  lease_end: "Lease end",
+  security_deposit: "Security deposit",
+  occupancy_status: "Occupancy status",
+  notes: "Notes",
+  matter_type: "Matter type",
+  current_balance: "Current balance",
+  first_unpaid_month: "First unpaid month",
+  last_payment_date: "Last payment date",
+  eviction_reason: "Eviction reason",
+  eviction_reason_other: "Other reason",
+  entry_date: "Date",
+  charge_type: "Type",
+  amount: "Charge amount",
+  payment_amount: "Payment amount",
+  credit_amount: "Credit amount",
+  _form: "Form",
+};
+
+/** Resolves a label for a field key, including ledger keys like `2.amount`. */
+export function fieldLabel(name: string): string {
+  const rowMatch = /^(\d+)\.(.+)$/.exec(name);
+  if (rowMatch) {
+    const [, index, field] = rowMatch;
+    return `Line ${Number(index) + 1} · ${FIELD_LABELS[field] ?? field}`;
+  }
+  return FIELD_LABELS[name] ?? name.replace(/_/g, " ");
+}
+
 const optionalDate = z
   .string()
   .trim()
