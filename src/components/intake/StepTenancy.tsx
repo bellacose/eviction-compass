@@ -8,11 +8,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { LEASE_TYPES, OCCUPANCY_STATUSES } from "@/lib/matter";
+import { tenancySchema, validate, type FieldErrors } from "@/lib/intake-validation";
 import type { StepProps } from "./types";
 
 export default function StepTenancy({ matter, clientId, save, next, back }: StepProps) {
   const { toast } = useToast();
   const [saving, setSaving] = useState(false);
+  const [errors, setErrors] = useState<FieldErrors>({});
   const [form, setForm] = useState({
     lease_start: "", lease_end: "", lease_type: "written",
     monthly_rent: "", security_deposit: "", occupancy_status: "current_tenant", notes: "",
@@ -41,6 +43,12 @@ export default function StepTenancy({ matter, clientId, save, next, back }: Step
       toast({ title: "Property and tenant are required first", variant: "destructive" });
       return;
     }
+    const { ok, errors: errs } = validate(tenancySchema, form);
+    setErrors(errs);
+    if (!ok) {
+      toast({ title: "Please fix the highlighted fields", variant: "destructive" });
+      return;
+    }
     setSaving(true);
     const payload = {
       client_id: clientId,
@@ -53,7 +61,7 @@ export default function StepTenancy({ matter, clientId, save, next, back }: Step
       monthly_rent: form.monthly_rent ? Number(form.monthly_rent) : null,
       security_deposit: form.security_deposit ? Number(form.security_deposit) : null,
       occupancy_status: form.occupancy_status as never,
-      notes: form.notes || null,
+      notes: form.notes.trim() || null,
     };
     let tenancyId = matter.tenancy_id as string | null;
     if (tenancyId) {
@@ -66,9 +74,13 @@ export default function StepTenancy({ matter, clientId, save, next, back }: Step
       await save({ tenancy_id: tenancyId });
     }
     setSaving(false);
+    setErrors({});
     toast({ title: "Tenancy saved" });
     next();
   };
+
+  const Err = ({ name }: { name: string }) =>
+    errors[name] ? <p className="text-xs text-destructive">{errors[name]}</p> : null;
 
   return (
     <Card>
@@ -96,23 +108,28 @@ export default function StepTenancy({ matter, clientId, save, next, back }: Step
           <div className="space-y-1.5">
             <Label>Lease start</Label>
             <Input type="date" value={form.lease_start} onChange={(e) => setForm({ ...form, lease_start: e.target.value })} />
+            <Err name="lease_start" />
           </div>
           <div className="space-y-1.5">
             <Label>Lease end</Label>
             <Input type="date" value={form.lease_end} onChange={(e) => setForm({ ...form, lease_end: e.target.value })} />
+            <Err name="lease_end" />
           </div>
           <div className="space-y-1.5">
-            <Label>Monthly rent</Label>
+            <Label>Monthly rent *</Label>
             <Input type="number" step="0.01" value={form.monthly_rent} onChange={(e) => setForm({ ...form, monthly_rent: e.target.value })} />
+            <Err name="monthly_rent" />
           </div>
           <div className="space-y-1.5">
             <Label>Security deposit</Label>
             <Input type="number" step="0.01" value={form.security_deposit} onChange={(e) => setForm({ ...form, security_deposit: e.target.value })} />
+            <Err name="security_deposit" />
           </div>
         </div>
         <div className="space-y-1.5">
           <Label>Notes</Label>
           <Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={3} />
+          <Err name="notes" />
         </div>
         <div className="flex justify-between pt-2">
           <Button variant="outline" onClick={back}>Back</Button>
