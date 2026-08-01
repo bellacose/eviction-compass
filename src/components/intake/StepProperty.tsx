@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 import { propertySchema, validate, type FieldErrors } from "@/lib/intake-validation";
+import ValidationSummary from "./ValidationSummary";
 import type { StepProps } from "./types";
 
 export default function StepProperty({ matter, clientId, save, next, back }: StepProps) {
@@ -81,6 +82,7 @@ export default function StepProperty({ matter, clientId, save, next, back }: Ste
     <Card>
       <CardHeader><CardTitle className="text-sm">Step 2 — Property</CardTitle></CardHeader>
       <CardContent className="space-y-4">
+        <ValidationSummary errors={errors} />
         <div className="flex gap-2">
           <Button type="button" size="sm" variant={mode === "select" ? "default" : "outline"} onClick={() => setMode("select")}>
             Select existing
