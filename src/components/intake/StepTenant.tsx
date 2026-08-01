@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Plus, Trash2 } from "lucide-react";
 import { emptyVerifiedField, type VerifiedField } from "@/lib/matter";
 import VerifiedFieldInput from "./VerifiedFieldInput";
+import { tenantSchema, validate, type FieldErrors } from "@/lib/intake-validation";
 import type { StepProps } from "./types";
 
 type Section = Record<string, VerifiedField>;
@@ -57,6 +58,7 @@ export default function StepTenant({ matter, clientId, save, next, back }: StepP
   const [tenants, setTenants] = useState<any[]>([]);
   const [mode, setMode] = useState<"select" | "create">("select");
   const [saving, setSaving] = useState(false);
+  const [errors, setErrors] = useState<FieldErrors>({});
 
   const [basics, setBasics] = useState({ first_name: "", last_name: "", phone: "", email: "", mailing_address: "" });
   const [identity, setIdentity] = useState<Section>({});
@@ -97,8 +99,19 @@ export default function StepTenant({ matter, clientId, save, next, back }: StepP
   const getField = (section: Section, key: string) => section[key] ?? emptyVerifiedField();
 
   const createTenant = async () => {
-    if (!basics.first_name.trim() || !basics.last_name.trim()) {
-      toast({ title: "First and last name required", variant: "destructive" });
+    const candidate = {
+      ...basics,
+      ssn_last4: getField(identity, "ssn_last4").value,
+      date_of_birth: getField(identity, "date_of_birth").value,
+    };
+    const { ok, errors: errs } = validate(tenantSchema, candidate);
+    setErrors(errs);
+    if (!ok) {
+      toast({
+        title: "Please fix the highlighted fields",
+        description: errs.ssn_last4 || errs.date_of_birth ? "Check the Identity section too." : undefined,
+        variant: "destructive",
+      });
       return;
     }
     setSaving(true);
@@ -128,8 +141,12 @@ export default function StepTenant({ matter, clientId, save, next, back }: StepP
     await save({ primary_tenant_id: data.id });
     await load();
     setMode("select");
+    setErrors({});
     toast({ title: "Tenant added" });
   };
+
+  const Err = ({ name }: { name: string }) =>
+    errors[name] ? <p className="text-xs text-destructive">{errors[name]}</p> : null;
 
   const renderList = (
     title: string,
@@ -211,20 +228,30 @@ export default function StepTenant({ matter, clientId, save, next, back }: StepP
               <div className="space-y-1.5">
                 <Label>First name *</Label>
                 <Input value={basics.first_name} onChange={(e) => setBasics({ ...basics, first_name: e.target.value })} />
+                <Err name="first_name" />
               </div>
               <div className="space-y-1.5">
                 <Label>Last name *</Label>
                 <Input value={basics.last_name} onChange={(e) => setBasics({ ...basics, last_name: e.target.value })} />
+                <Err name="last_name" />
               </div>
               <div className="space-y-1.5">
                 <Label>Phone</Label>
                 <Input value={basics.phone} onChange={(e) => setBasics({ ...basics, phone: e.target.value })} />
+                <Err name="phone" />
               </div>
               <div className="space-y-1.5">
                 <Label>Email</Label>
                 <Input value={basics.email} onChange={(e) => setBasics({ ...basics, email: e.target.value })} />
+                <Err name="email" />
               </div>
             </div>
+
+            {(errors.ssn_last4 || errors.date_of_birth) && (
+              <p className="text-xs text-destructive">
+                Identity section: {errors.ssn_last4 || errors.date_of_birth}
+              </p>
+            )}
 
             <Accordion type="multiple" className="w-full">
               <AccordionItem value="identity">
