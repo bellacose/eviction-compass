@@ -11,6 +11,7 @@ import { Plus, Trash2 } from "lucide-react";
 import { emptyVerifiedField, type VerifiedField } from "@/lib/matter";
 import VerifiedFieldInput from "./VerifiedFieldInput";
 import { tenantSchema, validate, type FieldErrors } from "@/lib/intake-validation";
+import ValidationSummary from "./ValidationSummary";
 import type { StepProps } from "./types";
 
 type Section = Record<string, VerifiedField>;
@@ -202,6 +203,7 @@ export default function StepTenant({ matter, clientId, save, next, back }: StepP
     <Card>
       <CardHeader><CardTitle className="text-sm">Step 4 — Tenant</CardTitle></CardHeader>
       <CardContent className="space-y-4">
+        <ValidationSummary errors={errors} />
         <div className="flex gap-2">
           <Button type="button" size="sm" variant={mode === "select" ? "default" : "outline"} onClick={() => setMode("select")}>
             Select existing
