@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { MATTER_TYPES, daysDelinquent, formatCurrency } from "@/lib/matter";
 import { balancesMatch, matterInfoSchema, validate, type FieldErrors } from "@/lib/intake-validation";
+import ValidationSummary from "./ValidationSummary";
 import type { StepProps } from "./types";
 
 export default function StepMatterInfo({ matter, save, next, back }: StepProps) {
@@ -92,6 +93,14 @@ export default function StepMatterInfo({ matter, save, next, back }: StepProps) 
     <Card>
       <CardHeader><CardTitle className="text-sm">Step 6 — Matter Information</CardTitle></CardHeader>
       <CardContent className="space-y-4">
+        <ValidationSummary
+          errors={errors}
+          extra={[
+            balanceMismatch
+              ? "Current balance does not match the rent ledger total — use the ledger total or update the ledger."
+              : null,
+          ]}
+        />
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-1.5">
             <Label>Matter type *</Label>
