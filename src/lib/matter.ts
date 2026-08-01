@@ -85,6 +85,30 @@ export async function logMatterEvent({
   if (error) console.warn("timeline event not recorded:", error.message);
 }
 
+/** Appends an event only if one with the same key does not already exist on the matter. */
+export async function logMatterEventOnce(input: MatterEventInput) {
+  const { data } = await supabase
+    .from("matter_events")
+    .select("id")
+    .eq("case_id", input.caseId)
+    .eq("event_key", input.eventKey)
+    .limit(1);
+  if (data?.length) return;
+  await logMatterEvent(input);
+}
+
+/** Records completion of a wizard step (one event per step, per matter). */
+export async function logIntakeStep(caseId: string, step: number, detail?: string | null) {
+  const label = INTAKE_STEPS[step - 1];
+  if (!label) return;
+  await logMatterEventOnce({
+    caseId,
+    eventKey: `intake_step_${step}_completed`,
+    label: `Intake step ${step} completed — ${label}`,
+    detail: detail ?? null,
+  });
+}
+
 export function daysDelinquent(firstUnpaidMonth?: string | null): number | null {
   if (!firstUnpaidMonth) return null;
   const start = new Date(firstUnpaidMonth);

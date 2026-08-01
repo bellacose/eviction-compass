@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Lock } from "lucide-react";
-import { INTAKE_STEPS, logMatterEvent } from "@/lib/matter";
+import { INTAKE_STEPS, logIntakeStep, logMatterEvent } from "@/lib/matter";
 import MatterTimeline from "@/components/MatterTimeline";
 import StepClient from "@/components/intake/StepClient";
 import StepProperty from "@/components/intake/StepProperty";
@@ -36,6 +36,7 @@ export default function MatterIntake() {
   const [clientId, setClientId] = useState<string>("");
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(!!id);
+  const [timelineTick, setTimelineTick] = useState(0);
 
   const basePath = isAdmin ? "/admin" : "/client";
 
@@ -112,6 +113,19 @@ export default function MatterIntake() {
     [matter, locked],
   );
 
+  /** Advancing past a step counts as submitting it — record it on the timeline. */
+  const completeStep = useCallback(
+    async (completed: number) => {
+      const target = matter?.id;
+      if (target && !locked) {
+        await logIntakeStep(target, completed);
+        setTimelineTick((t) => t + 1);
+      }
+      goTo(completed + 1);
+    },
+    [matter?.id, locked, goTo],
+  );
+
   const stepProps: StepProps = useMemo(
     () => ({
       matter,
@@ -119,12 +133,13 @@ export default function MatterIntake() {
       setClientId,
       save,
       refresh,
-      next: () => goTo(step + 1),
+      next: () => { void completeStep(step); },
       back: () => goTo(step - 1),
       goTo,
       isAdmin,
+      onTimelineChange: () => setTimelineTick((t) => t + 1),
     }),
-    [matter, clientId, save, refresh, goTo, step, isAdmin],
+    [matter, clientId, save, refresh, goTo, completeStep, step, isAdmin],
   );
 
   if (loading) {
@@ -175,7 +190,7 @@ export default function MatterIntake() {
 
       <StepComponent {...stepProps} />
 
-      {matter?.id && <MatterTimeline caseId={matter.id} includeInternal={isAdmin} />}
+      {matter?.id && <MatterTimeline caseId={matter.id} includeInternal={isAdmin} refreshToken={timelineTick} />}
     </div>
   );
 }

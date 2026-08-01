@@ -11,4 +11,6 @@ export interface StepProps {
   back: () => void;
   goTo: (step: number) => void;
   isAdmin: boolean;
+  /** Notifies the wizard that timeline events were written, so it reloads. */
+  onTimelineChange?: () => void;
 }
