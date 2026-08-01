@@ -3,8 +3,9 @@ import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import StatusBadge from "@/components/StatusBadge";
-import { Search } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 
 export default function ClientCasesList() {
   const [cases, setCases] = useState<any[]>([]);
@@ -26,14 +27,19 @@ export default function ClientCasesList() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold">My Cases</h1>
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="text-2xl font-bold">My Cases</h1>
+        <Button asChild>
+          <Link to="/client/matters/new"><Plus className="h-4 w-4 mr-2" />New Matter</Link>
+        </Button>
+      </div>
       <div className="relative max-w-sm">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input placeholder="Search cases…" value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
       </div>
       <div className="grid gap-3">
         {filtered.map((c) => (
-          <Link key={c.id} to={`/client/cases/${c.id}`}>
+          <Link key={c.id} to={c.status === "draft" ? `/client/matters/${c.id}` : `/client/cases/${c.id}`}>
             <Card className="hover:bg-accent/50 transition-colors">
               <CardContent className="p-4 flex items-center justify-between">
                 <div>
