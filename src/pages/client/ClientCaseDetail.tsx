@@ -10,6 +10,7 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { NOTICE_KIND_LABELS, NOTICE_STATUS_LABELS, currency } from "@/lib/notices";
 
 export default function ClientCaseDetail() {
   const { id } = useParams();
@@ -22,11 +23,12 @@ export default function ClientCaseDetail() {
   const [documents, setDocuments] = useState<any[]>([]);
   const [plans, setPlans] = useState<any[]>([]);
   const [payments, setPayments] = useState<any[]>([]);
+  const [notices, setNotices] = useState<any[]>([]);
 
   useEffect(() => {
     if (!id) return;
     const load = async () => {
-      const [caseRes, milestoneRes, notesRes, courtRes, docsRes, plansRes, paymentsRes] = await Promise.all([
+      const [caseRes, milestoneRes, notesRes, courtRes, docsRes, plansRes, paymentsRes, noticesRes] = await Promise.all([
         supabase.from("cases").select("*, properties(address_line1, city, state, zip), tenants(full_name)").eq("id", id).single(),
         supabase.from("case_milestones").select("*").eq("case_id", id).order("order_index"),
         supabase.from("case_notes").select("*, profiles(full_name)").eq("case_id", id).order("created_at", { ascending: false }),
@@ -34,6 +36,7 @@ export default function ClientCaseDetail() {
         supabase.from("documents").select("*").eq("case_id", id).order("created_at", { ascending: false }),
         supabase.from("payment_plans").select("*").eq("case_id", id).order("created_at", { ascending: false }),
         supabase.from("scheduled_payments").select("*").eq("case_id", id).order("due_date"),
+        supabase.from("notices").select("*").eq("case_id", id).order("prepared_date", { ascending: false }),
       ]);
       setCaseData(caseRes.data);
       setMilestones(milestoneRes.data || []);
@@ -42,6 +45,7 @@ export default function ClientCaseDetail() {
       setDocuments(docsRes.data || []);
       setPlans(plansRes.data || []);
       setPayments(paymentsRes.data || []);
+      setNotices(noticesRes.data || []);
     };
     load();
   }, [id]);
@@ -116,6 +120,30 @@ export default function ClientCaseDetail() {
       </Card>
 
       {/* Court Events */}
+      {notices.length > 0 && (
+        <Card>
+          <CardHeader><CardTitle className="text-sm">Notices</CardTitle></CardHeader>
+          <CardContent className="space-y-2">
+            {notices.map((n) => (
+              <div key={n.id} className="p-3 rounded-lg bg-muted/50 text-sm space-y-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-medium">{NOTICE_KIND_LABELS[n.notice_kind] ?? n.notice_kind}</span>
+                  <Badge variant="outline" className="text-[10px]">{NOTICE_STATUS_LABELS[n.status] ?? n.status}</Badge>
+                  <span className="ml-auto font-mono">{currency(n.amount_demanded)}</span>
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {n.served_date
+                    ? `Served ${format(new Date(n.served_date), "MMM d, yyyy")}`
+                    : `Prepared ${format(new Date(n.prepared_date), "MMM d, yyyy")}`}
+                  {n.cure_by_date && ` · Cure by ${format(new Date(n.cure_by_date), "MMM d, yyyy")}`}
+                  {n.eligible_to_file_date && ` · Filing eligible ${format(new Date(n.eligible_to_file_date), "MMM d, yyyy")}`}
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
       {courtEvents.length > 0 && (
         <Card>
           <CardHeader><CardTitle className="text-sm">Court Events</CardTitle></CardHeader>
