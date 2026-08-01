@@ -8,10 +8,10 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Download, Trash2, Upload } from "lucide-react";
-import { INTAKE_DOC_CATEGORIES } from "@/lib/matter";
+import { INTAKE_DOC_CATEGORIES, logMatterEvent } from "@/lib/matter";
 import type { StepProps } from "./types";
 
-export default function StepDocuments({ matter, clientId, next, back }: StepProps) {
+export default function StepDocuments({ matter, clientId, next, back, onTimelineChange }: StepProps) {
   const { toast } = useToast();
   const [docs, setDocs] = useState<any[]>([]);
   const [category, setCategory] = useState("lease");
@@ -59,6 +59,13 @@ export default function StepDocuments({ matter, clientId, next, back }: StepProp
     setFile(null);
     setDescription("");
     if (inputRef.current) inputRef.current.value = "";
+    await logMatterEvent({
+      caseId,
+      eventKey: "document_uploaded",
+      label: "Document uploaded",
+      detail: `${file.name} (${category})`,
+    });
+    onTimelineChange?.();
     toast({ title: "Document uploaded" });
     load();
   };
@@ -75,6 +82,15 @@ export default function StepDocuments({ matter, clientId, next, back }: StepProp
   const remove = async (doc: any) => {
     await supabase.storage.from("case-documents").remove([doc.file_path]);
     await supabase.from("documents").delete().eq("id", doc.id);
+    if (caseId) {
+      await logMatterEvent({
+        caseId,
+        eventKey: "document_removed",
+        label: "Document removed",
+        detail: `${doc.file_name} (${doc.category})`,
+      });
+      onTimelineChange?.();
+    }
     toast({ title: "Document removed" });
     load();
   };
