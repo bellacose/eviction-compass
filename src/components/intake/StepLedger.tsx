@@ -14,6 +14,7 @@ import {
   type FieldErrors,
 } from "@/lib/intake-validation";
 import type { StepProps } from "./types";
+import ValidationSummary from "./ValidationSummary";
 
 type Row = {
   id?: string;
@@ -134,6 +135,7 @@ export default function StepLedger({ matter, save, next, back, onTimelineChange 
     <Card>
       <CardHeader><CardTitle className="text-sm">Step 7 — Rent Ledger</CardTitle></CardHeader>
       <CardContent className="space-y-4">
+        <ValidationSummary errors={errors} extra={[balanceIssue]} />
         <div className="space-y-2">
           {rows.map((r, i) => (
             <div key={r.id ?? i} className="grid gap-2 rounded-md border p-3 sm:grid-cols-6">
