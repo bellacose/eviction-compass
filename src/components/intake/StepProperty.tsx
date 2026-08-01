@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
+import { propertySchema, validate, type FieldErrors } from "@/lib/intake-validation";
 import type { StepProps } from "./types";
 
 export default function StepProperty({ matter, clientId, save, next, back }: StepProps) {
@@ -14,6 +15,7 @@ export default function StepProperty({ matter, clientId, save, next, back }: Ste
   const [properties, setProperties] = useState<any[]>([]);
   const [mode, setMode] = useState<"select" | "create">("select");
   const [saving, setSaving] = useState(false);
+  const [errors, setErrors] = useState<FieldErrors>({});
   const [form, setForm] = useState({
     address_line1: "", address_line2: "", city: "Buffalo", state: "NY", zip: "", county: "",
   });
@@ -39,16 +41,21 @@ export default function StepProperty({ matter, clientId, save, next, back }: Ste
   };
 
   const createProperty = async () => {
-    if (!form.address_line1.trim()) {
-      toast({ title: "Address required", variant: "destructive" });
+    const { ok, errors: errs } = validate(propertySchema, form);
+    setErrors(errs);
+    if (!ok) {
+      toast({ title: "Please fix the highlighted fields", variant: "destructive" });
       return;
     }
     setSaving(true);
     const { data, error } = await supabase.from("properties").insert({
       client_id: clientId,
       address_line1: form.address_line1.trim(),
-      address_line2: form.address_line2 || null,
-      city: form.city, state: form.state, zip: form.zip || null, county: form.county || null,
+      address_line2: form.address_line2.trim() || null,
+      city: form.city.trim(),
+      state: form.state.trim().toUpperCase(),
+      zip: form.zip.trim() || null,
+      county: form.county.trim() || null,
     }).select().single();
     setSaving(false);
     if (error || !data) {
@@ -63,8 +70,12 @@ export default function StepProperty({ matter, clientId, save, next, back }: Ste
     });
     await load();
     setMode("select");
+    setErrors({});
     toast({ title: "Property added" });
   };
+
+  const Err = ({ name }: { name: string }) =>
+    errors[name] ? <p className="text-xs text-destructive">{errors[name]}</p> : null;
 
   return (
     <Card>
@@ -110,27 +121,33 @@ export default function StepProperty({ matter, clientId, save, next, back }: Ste
                   county: p.county || f.county,
                 }))}
               />
+              <Err name="address_line1" />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label>Address line 2</Label>
                 <Input value={form.address_line2} onChange={(e) => setForm({ ...form, address_line2: e.target.value })} />
+                <Err name="address_line2" />
               </div>
               <div className="space-y-1.5">
-                <Label>City</Label>
+                <Label>City *</Label>
                 <Input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} />
+                <Err name="city" />
               </div>
               <div className="space-y-1.5">
-                <Label>State</Label>
-                <Input value={form.state} onChange={(e) => setForm({ ...form, state: e.target.value })} />
+                <Label>State *</Label>
+                <Input maxLength={2} value={form.state} onChange={(e) => setForm({ ...form, state: e.target.value.toUpperCase() })} />
+                <Err name="state" />
               </div>
               <div className="space-y-1.5">
                 <Label>ZIP</Label>
                 <Input value={form.zip} onChange={(e) => setForm({ ...form, zip: e.target.value })} />
+                <Err name="zip" />
               </div>
               <div className="space-y-1.5">
                 <Label>County</Label>
                 <Input value={form.county} onChange={(e) => setForm({ ...form, county: e.target.value })} />
+                <Err name="county" />
               </div>
             </div>
             <Button type="button" onClick={createProperty} disabled={saving}>
