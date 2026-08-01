@@ -97,23 +97,28 @@ export default function StepUnit({ matter, save, next, back }: StepProps) {
               <div className="space-y-1.5">
                 <Label>Unit number *</Label>
                 <Input value={form.unit_number} onChange={(e) => setForm({ ...form, unit_number: e.target.value })} placeholder="1A" />
+                <Err name="unit_number" />
               </div>
               <div className="space-y-1.5">
                 <Label>Monthly rent</Label>
                 <Input type="number" step="0.01" value={form.monthly_rent} onChange={(e) => setForm({ ...form, monthly_rent: e.target.value })} />
+                <Err name="monthly_rent" />
               </div>
               <div className="space-y-1.5">
                 <Label>Bedrooms</Label>
                 <Input type="number" step="0.5" value={form.bedrooms} onChange={(e) => setForm({ ...form, bedrooms: e.target.value })} />
+                <Err name="bedrooms" />
               </div>
               <div className="space-y-1.5">
                 <Label>Bathrooms</Label>
                 <Input type="number" step="0.5" value={form.bathrooms} onChange={(e) => setForm({ ...form, bathrooms: e.target.value })} />
+                <Err name="bathrooms" />
               </div>
             </div>
             <div className="space-y-1.5">
               <Label>Description</Label>
               <Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+              <Err name="description" />
             </div>
             <Button type="button" onClick={createUnit} disabled={saving}>{saving ? "Saving…" : "Save unit"}</Button>
           </div>
