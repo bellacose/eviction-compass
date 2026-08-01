@@ -323,6 +323,10 @@ export default function AdminSettings() {
           </Card>
         </TabsContent>
 
+        <TabsContent value="notices">
+          <NoticeRulesPanel />
+        </TabsContent>
+
         <TabsContent value="disclaimer">
           <Card>
             <CardHeader><CardTitle className="text-sm">Legal Disclaimer</CardTitle></CardHeader>
