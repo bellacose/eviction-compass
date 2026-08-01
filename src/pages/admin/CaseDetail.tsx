@@ -352,6 +352,7 @@ export default function CaseDetail() {
 
         {/* Documents Tab */}
         <TabsContent value="documents">
+        {/* placeholder-anchor */}
           <Card>
             <CardHeader className="flex-row items-center justify-between">
               <CardTitle className="text-sm">Documents</CardTitle>
