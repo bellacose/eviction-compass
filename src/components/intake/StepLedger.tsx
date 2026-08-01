@@ -7,6 +7,12 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Trash2 } from "lucide-react";
 import { formatCurrency } from "@/lib/matter";
+import {
+  ledgerBalanceIssue,
+  ledgerTotals,
+  validateLedgerRows,
+  type FieldErrors,
+} from "@/lib/intake-validation";
 import type { StepProps } from "./types";
 
 type Row = {
@@ -33,6 +39,7 @@ export default function StepLedger({ matter, save, next, back }: StepProps) {
   const [rows, setRows] = useState<Row[]>([]);
   const [deleted, setDeleted] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
+  const [errors, setErrors] = useState<FieldErrors>({});
   const caseId = matter?.id as string | undefined;
 
   const load = useCallback(async () => {
@@ -56,21 +63,33 @@ export default function StepLedger({ matter, save, next, back }: StepProps) {
   useEffect(() => { load(); }, [load]);
 
   const num = (v: string) => (v ? Number(v) || 0 : 0);
-  const totalCharges = rows.reduce((s, r) => s + num(r.amount), 0);
-  const totalPayments = rows.reduce((s, r) => s + num(r.payment_amount) + num(r.credit_amount), 0);
-  const balance = totalCharges - totalPayments;
+  const { charges: totalCharges, payments: totalPayments, balance } = ledgerTotals(rows);
+  const balanceIssue = ledgerBalanceIssue(rows);
 
-  const update = (i: number, patch: Partial<Row>) =>
+  const update = (i: number, patch: Partial<Row>) => {
+    setErrors({});
     setRows(rows.map((r, ri) => (ri === i ? { ...r, ...patch } : r)));
+  };
 
   const remove = (i: number) => {
     const row = rows[i];
     if (row.id) setDeleted((d) => [...d, row.id!]);
+    setErrors({});
     setRows(rows.filter((_, ri) => ri !== i));
   };
 
   const persist = async () => {
     if (!caseId) return false;
+    const rowErrors = validateLedgerRows(rows);
+    setErrors(rowErrors);
+    if (Object.keys(rowErrors).length) {
+      toast({ title: "Fix the highlighted ledger lines", variant: "destructive" });
+      return false;
+    }
+    if (balanceIssue) {
+      toast({ title: "Ledger balance invalid", description: balanceIssue, variant: "destructive" });
+      return false;
+    }
     setSaving(true);
     if (deleted.length) await supabase.from("ledger_entries").delete().in("id", deleted);
     const { data: auth } = await supabase.auth.getUser();
@@ -97,6 +116,9 @@ export default function StepLedger({ matter, save, next, back }: StepProps) {
     return true;
   };
 
+  const Err = ({ name }: { name: string }) =>
+    errors[name] ? <p className="text-xs text-destructive">{errors[name]}</p> : null;
+
   return (
     <Card>
       <CardHeader><CardTitle className="text-sm">Step 7 — Rent Ledger</CardTitle></CardHeader>
@@ -107,10 +129,12 @@ export default function StepLedger({ matter, save, next, back }: StepProps) {
               <div className="space-y-1">
                 <Label className="text-xs">Date</Label>
                 <Input className="h-8" type="date" value={r.entry_date} onChange={(e) => update(i, { entry_date: e.target.value })} />
+                <Err name={`${i}.entry_date`} />
               </div>
               <div className="space-y-1">
                 <Label className="text-xs">Type</Label>
                 <Input className="h-8" value={r.charge_type} onChange={(e) => update(i, { charge_type: e.target.value })} placeholder="rent" />
+                <Err name={`${i}.charge_type`} />
               </div>
               <div className="space-y-1 sm:col-span-2">
                 <Label className="text-xs">Description</Label>
@@ -119,14 +143,17 @@ export default function StepLedger({ matter, save, next, back }: StepProps) {
               <div className="space-y-1">
                 <Label className="text-xs">Charge</Label>
                 <Input className="h-8" type="number" step="0.01" value={r.amount} onChange={(e) => update(i, { amount: e.target.value })} />
+                <Err name={`${i}.amount`} />
               </div>
               <div className="space-y-1">
                 <Label className="text-xs">Payment</Label>
                 <Input className="h-8" type="number" step="0.01" value={r.payment_amount} onChange={(e) => update(i, { payment_amount: e.target.value })} />
+                <Err name={`${i}.payment_amount`} />
               </div>
               <div className="space-y-1">
                 <Label className="text-xs">Credit</Label>
                 <Input className="h-8" type="number" step="0.01" value={r.credit_amount} onChange={(e) => update(i, { credit_amount: e.target.value })} />
+                <Err name={`${i}.credit_amount`} />
               </div>
               <div className="flex items-end sm:col-span-5 justify-end">
                 <Button type="button" variant="ghost" size="sm" onClick={() => remove(i)}>
@@ -146,6 +173,12 @@ export default function StepLedger({ matter, save, next, back }: StepProps) {
           <div>Balance: <span className="font-semibold">{formatCurrency(balance)}</span></div>
         </div>
 
+        {balanceIssue && (
+          <p className="rounded-md border border-destructive/40 bg-destructive/5 p-3 text-sm text-destructive">
+            {balanceIssue}
+          </p>
+        )}
+
         <div className="flex justify-between pt-2">
           <Button variant="outline" onClick={back}>Back</Button>
           <Button
@@ -153,7 +186,7 @@ export default function StepLedger({ matter, save, next, back }: StepProps) {
               const ok = await persist();
               if (ok) { toast({ title: "Ledger saved" }); next(); }
             }}
-            disabled={saving}
+            disabled={saving || !!balanceIssue}
           >
             {saving ? "Saving…" : "Save & continue"}
           </Button>
