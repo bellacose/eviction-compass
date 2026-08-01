@@ -7,9 +7,11 @@ interface Props {
   caseId: string;
   /** Admin views include internal-only events. */
   includeInternal?: boolean;
+  /** Bump to force a reload after new events are recorded. */
+  refreshToken?: number;
 }
 
-export default function MatterTimeline({ caseId, includeInternal = false }: Props) {
+export default function MatterTimeline({ caseId, includeInternal = false, refreshToken = 0 }: Props) {
   const [events, setEvents] = useState<any[]>([]);
 
   const load = useCallback(async () => {
@@ -23,7 +25,7 @@ export default function MatterTimeline({ caseId, includeInternal = false }: Prop
     setEvents(data ?? []);
   }, [caseId, includeInternal]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => { load(); }, [load, refreshToken]);
 
   return (
     <Card>
