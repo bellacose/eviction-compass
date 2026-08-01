@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
 import { MATTER_TYPE_LABELS, formatCurrency, logMatterEvent } from "@/lib/matter";
+import { balancesMatch } from "@/lib/intake-validation";
 import type { StepProps } from "./types";
 
 export default function StepReview({ matter, refresh, back, goTo, isAdmin }: StepProps) {
@@ -24,15 +25,25 @@ export default function StepReview({ matter, refresh, back, goTo, isAdmin }: Ste
       matter?.primary_tenant_id ? supabase.from("tenants").select("*").eq("id", matter.primary_tenant_id).maybeSingle() : null,
       matter?.tenancy_id ? supabase.from("tenancies").select("*").eq("id", matter.tenancy_id).maybeSingle() : null,
       supabase.from("documents").select("id").eq("case_id", caseId),
-      supabase.from("ledger_entries").select("id").eq("case_id", caseId),
+      supabase.from("ledger_entries").select("amount, payment_amount, credit_amount").eq("case_id", caseId),
     ]);
+    const ledgerRows = ledger?.data ?? [];
+    const ledgerBalance = ledgerRows.length
+      ? Math.round(
+          ledgerRows.reduce(
+            (s, r) => s + Number(r.amount ?? 0) - Number(r.payment_amount ?? 0) - Number(r.credit_amount ?? 0),
+            0,
+          ) * 100,
+        ) / 100
+      : null;
     setSummary({
       property: prop?.data ?? null,
       unit: unit?.data ?? null,
       tenant: tenant?.data ?? null,
       tenancy: tenancy?.data ?? null,
       docCount: docs?.data?.length ?? 0,
-      ledgerCount: ledger?.data?.length ?? 0,
+      ledgerCount: ledgerRows.length,
+      ledgerBalance,
     });
   }, [caseId, matter?.property_id, matter?.unit_id, matter?.primary_tenant_id, matter?.tenancy_id]);
 
@@ -44,6 +55,23 @@ export default function StepReview({ matter, refresh, back, goTo, isAdmin }: Ste
   if (!matter?.primary_tenant_id) issues.push({ label: "Tenant not selected", step: 4 });
   if (!matter?.tenancy_id) issues.push({ label: "Tenancy details missing", step: 5 });
   if (!matter?.matter_type) issues.push({ label: "Matter type not selected", step: 6 });
+  if (matter?.matter_type === "non_payment") {
+    if (!matter?.first_unpaid_month) issues.push({ label: "First unpaid month is required for non-payment", step: 6 });
+    if (!matter?.current_balance || Number(matter.current_balance) <= 0) {
+      issues.push({ label: "Balance owed must be greater than zero", step: 6 });
+    }
+    if (!summary.ledgerCount) issues.push({ label: "Add at least one rent ledger line", step: 7 });
+  }
+  if (summary.ledgerBalance != null && summary.ledgerBalance < 0) {
+    issues.push({ label: "Rent ledger balance cannot be negative", step: 7 });
+  }
+  if (
+    summary.ledgerBalance != null &&
+    !balancesMatch(matter?.current_balance != null ? Number(matter.current_balance) : 0, summary.ledgerBalance)
+  ) {
+    issues.push({ label: "Balance owed does not match the rent ledger total", step: 7 });
+  }
+  if (!summary.docCount) issues.push({ label: "Upload at least one supporting document", step: 8 });
 
   const submitted = !!matter?.submitted_at;
 

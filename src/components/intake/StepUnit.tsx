@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { unitSchema, validate, type FieldErrors } from "@/lib/intake-validation";
 import type { StepProps } from "./types";
 
 export default function StepUnit({ matter, save, next, back }: StepProps) {
@@ -13,6 +14,7 @@ export default function StepUnit({ matter, save, next, back }: StepProps) {
   const [units, setUnits] = useState<any[]>([]);
   const [mode, setMode] = useState<"select" | "create">("select");
   const [saving, setSaving] = useState(false);
+  const [errors, setErrors] = useState<FieldErrors>({});
   const [form, setForm] = useState({
     unit_number: "", description: "", bedrooms: "", bathrooms: "", monthly_rent: "",
   });
@@ -30,8 +32,10 @@ export default function StepUnit({ matter, save, next, back }: StepProps) {
 
   const createUnit = async () => {
     if (!propertyId) return;
-    if (!form.unit_number.trim()) {
-      toast({ title: "Unit number required", variant: "destructive" });
+    const { ok, errors: errs } = validate(unitSchema, form);
+    setErrors(errs);
+    if (!ok) {
+      toast({ title: "Please fix the highlighted fields", variant: "destructive" });
       return;
     }
     setSaving(true);
@@ -51,9 +55,13 @@ export default function StepUnit({ matter, save, next, back }: StepProps) {
     await save({ unit_id: data.id });
     await load();
     setMode("select");
+    setErrors({});
     setForm({ unit_number: "", description: "", bedrooms: "", bathrooms: "", monthly_rent: "" });
     toast({ title: "Unit added" });
   };
+
+  const Err = ({ name }: { name: string }) =>
+    errors[name] ? <p className="text-xs text-destructive">{errors[name]}</p> : null;
 
   return (
     <Card>
@@ -89,23 +97,28 @@ export default function StepUnit({ matter, save, next, back }: StepProps) {
               <div className="space-y-1.5">
                 <Label>Unit number *</Label>
                 <Input value={form.unit_number} onChange={(e) => setForm({ ...form, unit_number: e.target.value })} placeholder="1A" />
+                <Err name="unit_number" />
               </div>
               <div className="space-y-1.5">
                 <Label>Monthly rent</Label>
                 <Input type="number" step="0.01" value={form.monthly_rent} onChange={(e) => setForm({ ...form, monthly_rent: e.target.value })} />
+                <Err name="monthly_rent" />
               </div>
               <div className="space-y-1.5">
                 <Label>Bedrooms</Label>
                 <Input type="number" step="0.5" value={form.bedrooms} onChange={(e) => setForm({ ...form, bedrooms: e.target.value })} />
+                <Err name="bedrooms" />
               </div>
               <div className="space-y-1.5">
                 <Label>Bathrooms</Label>
                 <Input type="number" step="0.5" value={form.bathrooms} onChange={(e) => setForm({ ...form, bathrooms: e.target.value })} />
+                <Err name="bathrooms" />
               </div>
             </div>
             <div className="space-y-1.5">
               <Label>Description</Label>
               <Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+              <Err name="description" />
             </div>
             <Button type="button" onClick={createUnit} disabled={saving}>{saving ? "Saving…" : "Save unit"}</Button>
           </div>
