@@ -164,6 +164,7 @@ export default function AdminSettings() {
         <TabsList>
           <TabsTrigger value="defaults">Jurisdiction Defaults</TabsTrigger>
           <TabsTrigger value="templates">Milestone Templates</TabsTrigger>
+          <TabsTrigger value="notices">Notice Rules</TabsTrigger>
           <TabsTrigger value="disclaimer">Legal Disclaimer</TabsTrigger>
         </TabsList>
 
