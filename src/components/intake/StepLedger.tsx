@@ -186,12 +186,6 @@ export default function StepLedger({ matter, save, next, back, onTimelineChange 
           <div>Balance: <span className="font-semibold">{formatCurrency(balance)}</span></div>
         </div>
 
-        {balanceIssue && (
-          <p className="rounded-md border border-destructive/40 bg-destructive/5 p-3 text-sm text-destructive">
-            {balanceIssue}
-          </p>
-        )}
-
         <div className="flex justify-between pt-2">
           <Button variant="outline" onClick={back}>Back</Button>
           <Button
