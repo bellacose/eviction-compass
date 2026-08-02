@@ -35,10 +35,16 @@ import ClientPayments from "./pages/client/ClientPayments";
 import ClientCollectionsList from "./pages/client/ClientCollectionsList";
 import ClientCollectionDetail from "./pages/client/ClientCollectionDetail";
 
+// Attorney
+import AttorneyLayout from "./components/attorney/AttorneyLayout";
+import AttorneyDashboard from "./pages/attorney/AttorneyDashboard";
+import AttorneyMatters from "./pages/attorney/AttorneyMatters";
+import AttorneyMatterDetail from "./pages/attorney/AttorneyMatterDetail";
+
 const queryClient = new QueryClient();
 
 function AppRoutes() {
-  const { user, loading, isAdmin, isClient } = useAuth();
+  const { user, loading, isAdmin, isClient, isAttorney } = useAuth();
 
   if (loading) {
     return (
@@ -59,7 +65,7 @@ function AppRoutes() {
   }
 
   // Role-based routing
-  const defaultPath = isAdmin ? "/admin" : isClient ? "/client" : "/login";
+  const defaultPath = isAdmin ? "/admin" : isAttorney ? "/attorney" : isClient ? "/client" : "/login";
 
   return (
     <Routes>
@@ -100,6 +106,15 @@ function AppRoutes() {
           <Route path="collections" element={<ClientCollectionsList />} />
           <Route path="collections/:id" element={<ClientCollectionDetail />} />
           <Route path="profile" element={<ClientProfile />} />
+        </Route>
+      )}
+
+      {/* Attorney routes */}
+      {isAttorney && (
+        <Route path="/attorney" element={<AttorneyLayout />}>
+          <Route index element={<AttorneyDashboard />} />
+          <Route path="matters" element={<AttorneyMatters />} />
+          <Route path="matters/:id" element={<AttorneyMatterDetail />} />
         </Route>
       )}
 

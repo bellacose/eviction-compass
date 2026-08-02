@@ -2,3 +2,6 @@ project_id = "fyvwavnyndvyganyknaa"
 
 [functions.invite-user]
 verify_jwt = false
+
+[functions.invite-attorney]
+verify_jwt = false
