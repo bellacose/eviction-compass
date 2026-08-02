@@ -3752,6 +3752,7 @@ export type Database = {
         Args: { _note?: string; _request_id: string }
         Returns: Json
       }
+      save_ledger: { Args: { _case_id: string; _lines: Json }; Returns: Json }
       transition_attorney_referral: {
         Args: {
           _idempotency_key?: string
