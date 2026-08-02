@@ -135,3 +135,30 @@ Acceptance gate results (verified against the live database as a signed-in admin
 Test data used for verification was restored to its original statuses and the test-only history rows removed.
 
 Still deferred as planned: dedicated attorney and agency login principals (Phase B / D), notification delivery, court and judgment records.
+
+## Phase B Stage 2 — Referral lifecycle, review queue, information requests — 2026-08-02
+
+| Requirement | Status | Evidence |
+|---|---|---|
+| Controlled referral lifecycle, no direct status writes | CONFORMS | `attorney_referrals` has SELECT-only grants for `authenticated`; all writes go through `create_attorney_referral()`, `transition_attorney_referral()` and `attach_revised_packet()` (security definer, row-locked). |
+| Data-driven referral matrix | CONFORMS | 11 active rows in `attorney_referral_transition_rules` covering send, acknowledge, accept, decline, request/satisfy information, complete and four withdraw paths. |
+| Reason required for decline and withdrawal | CONFORMS | `requires_reason` on those rules, enforced in the RPC and mirrored by `evaluateReferralTransition()`. |
+| One active referral per matter, history preserved | CONFORMS | Partial unique index `attorney_referrals_one_active_per_case`; declined/withdrawn/completed rows remain readable and a new referral may be created. |
+| Accept and decline by a named attorney only | CONFORMS | `requires_named_attorney` + `current_attorney_id()`; a firm-addressed referral stamps the accepting attorney. |
+| Packet version frozen and never silently swapped | CONFORMS | `send_referral` requires `referral_packet_id`; `attach_revised_packet()` logs `referral_packet_superseded` and opens a blocking acknowledgment task. |
+| Idempotency and single-write timeline/tasks | CONFORMS | Unique `(referral_id, idempotency_key)`; duplicate keys replay the prior result. Task creation guarded against an existing open task of the same type. |
+| Append-only referral history and response history | CONFORMS | `forbid_mutation()` triggers reject UPDATE/DELETE on `attorney_referral_transitions` and `information_request_responses`. |
+| Blocking information request prevents filing approval | CONFORMS | `confirm_filing_eligibility()` now raises when `has_blocking_information_request()` is true. |
+| Attorney queue derived from more than case status | CONFORMS | `src/lib/attorney-queue.ts` merges referrals, tasks, holds, information requests and matter change events into eight groups. |
+| Client sees a safe status label only | CONFORMS | `ClientReferralStatus` renders `client_visible_status`; fee terms, decline detail and attorney identity are not exposed, and clients have no referral write path. |
+| Assignment-scoped RLS with immediate revocation | CONFORMS | `attorney_can_access_referral()` re-evaluated per query on top of `current_attorney_id()` and `attorney_firm_ids()`; nothing is cached client-side. |
+
+Deferred by design to Stage 3: `filing_approvals` snapshots, approval-invalidation triggers,
+and note visibility levels (`attorney_privileged`). Existing hard/soft change classification
+is untouched.
+
+Test coverage: 46 automated tests pass (`transitions`, `attorney`, `referrals` suites),
+typecheck clean. The referral and information-request guards are covered as pure mirrors of
+the server rules; multi-session database-authenticated RLS tests remain a known gap (see
+"Known limitations" in `docs/attorney-referral-state-machine.md`) because the project has no
+harness for minting second and third user sessions.
