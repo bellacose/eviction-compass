@@ -7,7 +7,7 @@ import { format } from "date-fns";
 import { ListChecks } from "lucide-react";
 
 /** Cross-matter open task feed for the admin and client dashboards. */
-export default function NextActionsList({ basePath }: { basePath: "/cases" | "/client/cases" }) {
+export default function NextActionsList({ basePath }: { basePath: "/admin/cases" | "/client/cases" }) {
   const [tasks, setTasks] = useState<any[]>([]);
   const [holds, setHolds] = useState<any[]>([]);
 
