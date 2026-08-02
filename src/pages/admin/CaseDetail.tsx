@@ -22,6 +22,9 @@ import CourtEventDialog from "@/components/admin/CourtEventDialog";
 import ServiceRecordDialog from "@/components/admin/ServiceRecordDialog";
 import PaymentPlanPanel from "@/components/admin/PaymentPlanPanel";
 import NoticesPanel from "@/components/admin/NoticesPanel";
+import NextActionPanel from "@/components/matter/NextActionPanel";
+import MatterActionsPanel from "@/components/matter/MatterActionsPanel";
+import MatterHoldPanel from "@/components/matter/MatterHoldPanel";
 
 const DOCUMENT_CATEGORIES = ["lease", "rent_ledger", "notice", "proof_of_service", "petition_filing", "court_document", "photo", "correspondence", "other"] as const;
 
@@ -38,6 +41,7 @@ export default function CaseDetail() {
   const [activity, setActivity] = useState<any[]>([]);
   const [ledgerEntries, setLedgerEntries] = useState<any[]>([]);
   const [newNote, setNewNote] = useState("");
+  const [workflowKey, setWorkflowKey] = useState(0);
   
   // Ledger dialog state
   const [ledgerDialogOpen, setLedgerDialogOpen] = useState(false);
