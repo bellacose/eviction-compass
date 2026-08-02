@@ -70,37 +70,46 @@ export type Database = {
       }
       case_counsel: {
         Row: {
+          allow_firm_access: boolean
           assigned_at: string
           case_id: string
           counsel_id: string
           created_at: string
           fee_arrangement: string | null
+          firm_id: string | null
           id: string
           notes: string | null
           retainer_amount: number | null
           role: string
+          unassigned_at: string | null
         }
         Insert: {
+          allow_firm_access?: boolean
           assigned_at?: string
           case_id: string
           counsel_id: string
           created_at?: string
           fee_arrangement?: string | null
+          firm_id?: string | null
           id?: string
           notes?: string | null
           retainer_amount?: number | null
           role?: string
+          unassigned_at?: string | null
         }
         Update: {
+          allow_firm_access?: boolean
           assigned_at?: string
           case_id?: string
           counsel_id?: string
           created_at?: string
           fee_arrangement?: string | null
+          firm_id?: string | null
           id?: string
           notes?: string | null
           retainer_amount?: number | null
           role?: string
+          unassigned_at?: string | null
         }
         Relationships: [
           {
@@ -115,6 +124,13 @@ export type Database = {
             columns: ["counsel_id"]
             isOneToOne: false
             referencedRelation: "counsel"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "case_counsel_firm_id_fkey"
+            columns: ["firm_id"]
+            isOneToOne: false
+            referencedRelation: "firms"
             referencedColumns: ["id"]
           },
         ]
@@ -839,45 +855,74 @@ export type Database = {
       }
       counsel: {
         Row: {
+          activated_at: string | null
           address: string | null
           attorney_name: string
+          bar_jurisdictions: string[]
           bar_number: string | null
           created_at: string
           email: string | null
+          firm_id: string | null
           firm_name: string | null
           id: string
+          invited_at: string | null
           is_active: boolean
+          is_firm_admin: boolean
           notes: string | null
           phone: string | null
+          status: Database["public"]["Enums"]["attorney_status"]
           updated_at: string
+          user_id: string | null
         }
         Insert: {
+          activated_at?: string | null
           address?: string | null
           attorney_name: string
+          bar_jurisdictions?: string[]
           bar_number?: string | null
           created_at?: string
           email?: string | null
+          firm_id?: string | null
           firm_name?: string | null
           id?: string
+          invited_at?: string | null
           is_active?: boolean
+          is_firm_admin?: boolean
           notes?: string | null
           phone?: string | null
+          status?: Database["public"]["Enums"]["attorney_status"]
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
+          activated_at?: string | null
           address?: string | null
           attorney_name?: string
+          bar_jurisdictions?: string[]
           bar_number?: string | null
           created_at?: string
           email?: string | null
+          firm_id?: string | null
           firm_name?: string | null
           id?: string
+          invited_at?: string | null
           is_active?: boolean
+          is_firm_admin?: boolean
           notes?: string | null
           phone?: string | null
+          status?: Database["public"]["Enums"]["attorney_status"]
           updated_at?: string
+          user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "counsel_firm_id_fkey"
+            columns: ["firm_id"]
+            isOneToOne: false
+            referencedRelation: "firms"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       court_events: {
         Row: {
@@ -1262,6 +1307,102 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      firm_members: {
+        Row: {
+          counsel_id: string
+          created_at: string
+          firm_id: string
+          id: string
+          member_role: Database["public"]["Enums"]["firm_member_role"]
+          updated_at: string
+        }
+        Insert: {
+          counsel_id: string
+          created_at?: string
+          firm_id: string
+          id?: string
+          member_role?: Database["public"]["Enums"]["firm_member_role"]
+          updated_at?: string
+        }
+        Update: {
+          counsel_id?: string
+          created_at?: string
+          firm_id?: string
+          id?: string
+          member_role?: Database["public"]["Enums"]["firm_member_role"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "firm_members_counsel_id_fkey"
+            columns: ["counsel_id"]
+            isOneToOne: false
+            referencedRelation: "counsel"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "firm_members_firm_id_fkey"
+            columns: ["firm_id"]
+            isOneToOne: false
+            referencedRelation: "firms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      firms: {
+        Row: {
+          address_line1: string | null
+          address_line2: string | null
+          city: string | null
+          contact_name: string | null
+          created_at: string
+          email: string | null
+          id: string
+          is_active: boolean
+          jurisdictions: string[]
+          name: string
+          notes: string | null
+          phone: string | null
+          state: string | null
+          updated_at: string
+          zip: string | null
+        }
+        Insert: {
+          address_line1?: string | null
+          address_line2?: string | null
+          city?: string | null
+          contact_name?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          jurisdictions?: string[]
+          name: string
+          notes?: string | null
+          phone?: string | null
+          state?: string | null
+          updated_at?: string
+          zip?: string | null
+        }
+        Update: {
+          address_line1?: string | null
+          address_line2?: string | null
+          city?: string | null
+          contact_name?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          jurisdictions?: string[]
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          state?: string | null
+          updated_at?: string
+          zip?: string | null
+        }
+        Relationships: []
       }
       ledger_entries: {
         Row: {
@@ -2476,7 +2617,8 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "super_admin" | "admin" | "client"
+      app_role: "super_admin" | "admin" | "client" | "attorney"
+      attorney_status: "invited" | "active" | "inactive" | "suspended"
       case_priority: "low" | "normal" | "high"
       case_status:
         | "intake"
@@ -2564,6 +2706,7 @@ export type Database = {
         | "income_execution"
         | "restraining_notice"
         | "other"
+      firm_member_role: "member" | "firm_admin"
       matter_hold_type:
         | "bankruptcy"
         | "military_review"
@@ -2746,7 +2889,8 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["super_admin", "admin", "client"],
+      app_role: ["super_admin", "admin", "client", "attorney"],
+      attorney_status: ["invited", "active", "inactive", "suspended"],
       case_priority: ["low", "normal", "high"],
       case_status: [
         "intake",
@@ -2844,6 +2988,7 @@ export const Constants = {
         "restraining_notice",
         "other",
       ],
+      firm_member_role: ["member", "firm_admin"],
       matter_hold_type: [
         "bankruptcy",
         "military_review",
