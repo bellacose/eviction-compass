@@ -117,3 +117,21 @@ Field-level masking with reveal/download/export logging into `activity_log`; app
 ## Maintenance
 
 Update this file at the end of every sprint. When the app must diverge from the Bible, add the item to "Conflicts to decide" rather than changing behavior quietly (Bible §Governance rule, §18).
+## Phase A stabilization sprint — 2026-08-02
+
+Acceptance gate results (verified against the live database as a signed-in admin, plus the UI):
+
+| Gate | Result | Evidence |
+|---|---|---|
+| No direct status update succeeds outside `transition_matter()` | PASS | `BEFORE UPDATE` trigger `trg_guard_case_status` on `cases`. A PostgREST `PATCH /cases {"status":"filed"}` and a privileged direct `UPDATE` both fail with "Matter status can only be changed through transition_matter()". Non-status column edits still succeed. |
+| Client cannot self-promote by direct write | PASS | `Clients edit own draft matters` policy now checks `status = 'draft'` on both sides; submission is RPC-only. |
+| Every non-terminal status has intentional outbound rules | PASS | 29 active rules, all 14 statuses covered. See `docs/matter-transition-matrix.md`. Added withdraw, cancel, resolve-early, reopen and legacy on-hold routes. `closed` designated terminal; the Next Action panel states this explicitly instead of showing nothing. |
+| Blocking holds prevent incompatible actions | PASS after fix | **Bug found and fixed:** the hold check used `record IS NOT NULL`, which in PL/pgSQL is only true when every field is non-null — so an active hold never blocked anything. Rewritten to select the hold type scalar. Verified: bankruptcy hold now returns "Blocked by an active bankruptcy hold". The same record-null pattern was corrected in `open_matter_hold`, `release_matter_hold`, `complete_task` and `confirm_filing_eligibility` (all now use `IF NOT FOUND`). |
+| Valid transitions are atomic | PASS | `transition_matter()` is a single PL/pgSQL function, so the status update, `matter_transitions` row, `matter_events` rows and task writes share one transaction; any `RAISE` rolls back everything. Confirmed on every rejected attempt: status unchanged and no history rows written. |
+| Duplicate requests are idempotent | PASS | `matter_transitions.idempotency_key` with a unique index per case, and `transition_matter(..., _idempotency_key)` replays the prior result. Two identical calls produced exactly 1 transition, 1 timeline event, 1 task. Follow-up task creation is additionally guarded against an existing open task of the same type. The UI generates one key per action dialog and disables the button while in flight. |
+| Concurrent actions cannot corrupt state | PASS | Simultaneous `schedule_appearance` and `open_matter_hold(court_stay)` on the same matter: the hold committed, the transition returned "Blocked by an active court_stay hold". `SELECT ... FOR UPDATE` on the case row serializes both paths. Two simultaneous identical transitions: one applies, the other returns "not allowed from status X". |
+| Main smoke flow works through the UI | PASS | Admin matter screen renders Available Actions (Begin statutory waiting period, Resolve early, Cancel matter), Next Action panel and hold panel; draft submission runs through `submit_for_review` end to end. No new console errors. |
+
+Test data used for verification was restored to its original statuses and the test-only history rows removed.
+
+Still deferred as planned: dedicated attorney and agency login principals (Phase B / D), notification delivery, court and judgment records.
