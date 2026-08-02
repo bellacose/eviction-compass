@@ -37,7 +37,7 @@ const blankRow = (): Row => ({
   credit_amount: "",
 });
 
-export default function StepLedger({ matter, save, refresh, next, back, onTimelineChange }: StepProps) {
+export default function StepLedger({ matter, refresh, next, back, onTimelineChange }: StepProps) {
   const { toast } = useToast();
   const [rows, setRows] = useState<Row[]>([]);
   const [saving, setSaving] = useState(false);
