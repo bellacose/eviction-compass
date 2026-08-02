@@ -39,7 +39,7 @@ export default function ReferralPanel({ caseId, actorRole, actorAttorneyId, onCh
   const [counsel, setCounsel] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
-  const [pending, setPending] = useState<ReferralTransitionRule | null>(null);
+  const [pending, setPending] = useState<{ rule: ReferralTransitionRule; referralId: string } | null>(null);
   const [reason, setReason] = useState("");
   const [showHistory, setShowHistory] = useState(false);
 
@@ -105,22 +105,13 @@ export default function ReferralPanel({ caseId, actorRole, actorAttorneyId, onCh
   };
 
   const onAction = (rule: ReferralTransitionRule, referralId: string) => {
-    if (rule.requires_reason) {
-      setPending({ ...rule, transition_key: rule.transition_key });
-      (rule as any)._referralId = referralId;
-      setPending(rule);
-      setReason("");
-      (window as any).__referralTarget = referralId;
-      return;
-    }
-    (window as any).__referralTarget = referralId;
-    setPending(rule);
+    setReason("");
+    setPending({ rule, referralId });
   };
 
   const confirmPending = async () => {
     if (!pending) return;
-    const target = (window as any).__referralTarget as string;
-    await run(pending, target, pending.requires_reason ? reason : undefined);
+    await run(pending.rule, pending.referralId, pending.rule.requires_reason ? reason : undefined);
   };
 
   const create = async () => {
@@ -311,12 +302,12 @@ export default function ReferralPanel({ caseId, actorRole, actorAttorneyId, onCh
       <AlertDialog open={!!pending} onOpenChange={(o) => { if (!o) { setPending(null); setReason(""); } }}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{pending?.label}</AlertDialogTitle>
+            <AlertDialogTitle>{pending?.rule.label}</AlertDialogTitle>
             <AlertDialogDescription>
               This action is recorded on the matter timeline and cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          {pending?.requires_reason && (
+          {pending?.rule.requires_reason && (
             <div className="space-y-1">
               <Label className="text-xs">Reason (required)</Label>
               <Textarea rows={3} value={reason} onChange={(e) => setReason(e.target.value)} />
@@ -325,7 +316,7 @@ export default function ReferralPanel({ caseId, actorRole, actorAttorneyId, onCh
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              disabled={busy || (pending?.requires_reason && !reason.trim())}
+              disabled={busy || (pending?.rule.requires_reason && !reason.trim())}
               onClick={(e) => { e.preventDefault(); confirmPending(); }}
             >
               Confirm
