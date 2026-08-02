@@ -15,6 +15,7 @@ import {
   fetchOpenTasks,
   fetchTransitionRules,
   HOLD_TYPE_LABELS,
+  isTerminalStatus,
   type ActorRole,
   type CaseStatus,
   type TransitionRule,
@@ -144,6 +145,16 @@ export default function NextActionPanel({ caseId, status, readOnly, refreshKey, 
         {actions.length > 0 && (
           <div className="text-xs text-muted-foreground">
             Available: {actions.map((a) => a.label).join(", ")}
+          </div>
+        )}
+
+        {actions.length === 0 && rules.length > 0 && (
+          <div className="text-xs text-muted-foreground">
+            {isTerminalStatus(rules, status)
+              ? "Terminal status — no further action."
+              : readOnly || role === "client"
+                ? "No client action available — this matter is with the legal team."
+                : "No action available from this status right now."}
           </div>
         )}
       </CardContent>

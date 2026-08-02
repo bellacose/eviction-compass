@@ -120,6 +120,15 @@ export function availableTransitions(rules: TransitionRule[], status: CaseStatus
   return rules.filter((r) => r.from_status === status && r.allowed_roles.includes(role));
 }
 
+/** A status is terminal when no active rule leads out of it for anyone. */
+export function isTerminalStatus(rules: TransitionRule[], status: CaseStatus): boolean {
+  return rules.length > 0 && !rules.some((r) => r.from_status === status);
+}
+
+export function newIdempotencyKey(): string {
+  return globalThis.crypto?.randomUUID?.() ?? `k-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
 export type TransitionResponse = {
   matter: Record<string, unknown>;
   next_actions: { transition_key: string; label: string; to_status: CaseStatus }[];
@@ -130,12 +139,14 @@ export async function transitionMatter(
   transitionKey: string,
   reason?: string | null,
   metadata?: Record<string, unknown>,
+  idempotencyKey?: string | null,
 ): Promise<TransitionResponse> {
   const { data, error } = await supabase.rpc("transition_matter", {
     _case_id: caseId,
     _transition_key: transitionKey,
     _reason: reason ?? null,
     _metadata: (metadata ?? {}) as never,
+    _idempotency_key: idempotencyKey ?? undefined,
   });
   if (error) throw new Error(error.message);
   return data as unknown as TransitionResponse;
