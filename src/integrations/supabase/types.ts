@@ -68,6 +68,227 @@ export type Database = {
           },
         ]
       }
+      attorney_referral_transition_rules: {
+        Row: {
+          allowed_roles: string[]
+          completes_task_types: string[]
+          created_at: string
+          creates_task_json: Json | null
+          description: string | null
+          event_key: string
+          from_status: Database["public"]["Enums"]["attorney_referral_status"]
+          id: string
+          is_active: boolean
+          label: string
+          order_index: number
+          requires_named_attorney: boolean
+          requires_packet: boolean
+          requires_reason: boolean
+          to_status: Database["public"]["Enums"]["attorney_referral_status"]
+          transition_key: string
+          updated_at: string
+        }
+        Insert: {
+          allowed_roles?: string[]
+          completes_task_types?: string[]
+          created_at?: string
+          creates_task_json?: Json | null
+          description?: string | null
+          event_key: string
+          from_status: Database["public"]["Enums"]["attorney_referral_status"]
+          id?: string
+          is_active?: boolean
+          label: string
+          order_index?: number
+          requires_named_attorney?: boolean
+          requires_packet?: boolean
+          requires_reason?: boolean
+          to_status: Database["public"]["Enums"]["attorney_referral_status"]
+          transition_key: string
+          updated_at?: string
+        }
+        Update: {
+          allowed_roles?: string[]
+          completes_task_types?: string[]
+          created_at?: string
+          creates_task_json?: Json | null
+          description?: string | null
+          event_key?: string
+          from_status?: Database["public"]["Enums"]["attorney_referral_status"]
+          id?: string
+          is_active?: boolean
+          label?: string
+          order_index?: number
+          requires_named_attorney?: boolean
+          requires_packet?: boolean
+          requires_reason?: boolean
+          to_status?: Database["public"]["Enums"]["attorney_referral_status"]
+          transition_key?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      attorney_referral_transitions: {
+        Row: {
+          actor_role: string | null
+          actor_user_id: string | null
+          case_id: string
+          created_at: string
+          from_status:
+            | Database["public"]["Enums"]["attorney_referral_status"]
+            | null
+          id: string
+          idempotency_key: string | null
+          metadata: Json
+          reason: string | null
+          referral_id: string
+          to_status: Database["public"]["Enums"]["attorney_referral_status"]
+          transition_key: string
+        }
+        Insert: {
+          actor_role?: string | null
+          actor_user_id?: string | null
+          case_id: string
+          created_at?: string
+          from_status?:
+            | Database["public"]["Enums"]["attorney_referral_status"]
+            | null
+          id?: string
+          idempotency_key?: string | null
+          metadata?: Json
+          reason?: string | null
+          referral_id: string
+          to_status: Database["public"]["Enums"]["attorney_referral_status"]
+          transition_key: string
+        }
+        Update: {
+          actor_role?: string | null
+          actor_user_id?: string | null
+          case_id?: string
+          created_at?: string
+          from_status?:
+            | Database["public"]["Enums"]["attorney_referral_status"]
+            | null
+          id?: string
+          idempotency_key?: string | null
+          metadata?: Json
+          reason?: string | null
+          referral_id?: string
+          to_status?: Database["public"]["Enums"]["attorney_referral_status"]
+          transition_key?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attorney_referral_transitions_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attorney_referral_transitions_referral_id_fkey"
+            columns: ["referral_id"]
+            isOneToOne: false
+            referencedRelation: "attorney_referrals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      attorney_referrals: {
+        Row: {
+          attorney_id: string | null
+          case_id: string
+          client_visible_status: string | null
+          completion_notes: string | null
+          created_at: string
+          created_by: string | null
+          decided_at: string | null
+          decided_by: string | null
+          decline_reason: string | null
+          fee_arrangement: string | null
+          firm_id: string | null
+          id: string
+          idempotency_key: string | null
+          referral_packet_id: string | null
+          sent_at: string | null
+          sent_by: string | null
+          status: Database["public"]["Enums"]["attorney_referral_status"]
+          updated_at: string
+          withdrawal_reason: string | null
+        }
+        Insert: {
+          attorney_id?: string | null
+          case_id: string
+          client_visible_status?: string | null
+          completion_notes?: string | null
+          created_at?: string
+          created_by?: string | null
+          decided_at?: string | null
+          decided_by?: string | null
+          decline_reason?: string | null
+          fee_arrangement?: string | null
+          firm_id?: string | null
+          id?: string
+          idempotency_key?: string | null
+          referral_packet_id?: string | null
+          sent_at?: string | null
+          sent_by?: string | null
+          status?: Database["public"]["Enums"]["attorney_referral_status"]
+          updated_at?: string
+          withdrawal_reason?: string | null
+        }
+        Update: {
+          attorney_id?: string | null
+          case_id?: string
+          client_visible_status?: string | null
+          completion_notes?: string | null
+          created_at?: string
+          created_by?: string | null
+          decided_at?: string | null
+          decided_by?: string | null
+          decline_reason?: string | null
+          fee_arrangement?: string | null
+          firm_id?: string | null
+          id?: string
+          idempotency_key?: string | null
+          referral_packet_id?: string | null
+          sent_at?: string | null
+          sent_by?: string | null
+          status?: Database["public"]["Enums"]["attorney_referral_status"]
+          updated_at?: string
+          withdrawal_reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attorney_referrals_attorney_id_fkey"
+            columns: ["attorney_id"]
+            isOneToOne: false
+            referencedRelation: "counsel"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attorney_referrals_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attorney_referrals_firm_id_fkey"
+            columns: ["firm_id"]
+            isOneToOne: false
+            referencedRelation: "firms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attorney_referrals_referral_packet_id_fkey"
+            columns: ["referral_packet_id"]
+            isOneToOne: false
+            referencedRelation: "referral_packets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       case_counsel: {
         Row: {
           assigned_at: string
@@ -1412,6 +1633,160 @@ export type Database = {
           zip?: string | null
         }
         Relationships: []
+      }
+      information_request_responses: {
+        Row: {
+          case_id: string
+          created_at: string
+          document_ids: string[]
+          id: string
+          idempotency_key: string | null
+          is_revision: boolean
+          request_id: string
+          responded_by: string | null
+          responder_role: string | null
+          response_text: string
+        }
+        Insert: {
+          case_id: string
+          created_at?: string
+          document_ids?: string[]
+          id?: string
+          idempotency_key?: string | null
+          is_revision?: boolean
+          request_id: string
+          responded_by?: string | null
+          responder_role?: string | null
+          response_text: string
+        }
+        Update: {
+          case_id?: string
+          created_at?: string
+          document_ids?: string[]
+          id?: string
+          idempotency_key?: string | null
+          is_revision?: boolean
+          request_id?: string
+          responded_by?: string | null
+          responder_role?: string | null
+          response_text?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "information_request_responses_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "information_request_responses_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "information_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      information_requests: {
+        Row: {
+          assigned_role: string | null
+          assigned_user_id: string | null
+          blocking: boolean
+          case_id: string
+          category: string
+          created_at: string
+          description: string
+          due_at: string | null
+          id: string
+          referral_id: string | null
+          related_record_id: string | null
+          related_record_type: string | null
+          requested_by: string | null
+          requested_by_counsel_id: string | null
+          resolution_notes: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          responded_at: string | null
+          responded_by: string | null
+          response_text: string | null
+          status: Database["public"]["Enums"]["information_request_status"]
+          task_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          assigned_role?: string | null
+          assigned_user_id?: string | null
+          blocking?: boolean
+          case_id: string
+          category?: string
+          created_at?: string
+          description: string
+          due_at?: string | null
+          id?: string
+          referral_id?: string | null
+          related_record_id?: string | null
+          related_record_type?: string | null
+          requested_by?: string | null
+          requested_by_counsel_id?: string | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          responded_at?: string | null
+          responded_by?: string | null
+          response_text?: string | null
+          status?: Database["public"]["Enums"]["information_request_status"]
+          task_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          assigned_role?: string | null
+          assigned_user_id?: string | null
+          blocking?: boolean
+          case_id?: string
+          category?: string
+          created_at?: string
+          description?: string
+          due_at?: string | null
+          id?: string
+          referral_id?: string | null
+          related_record_id?: string | null
+          related_record_type?: string | null
+          requested_by?: string | null
+          requested_by_counsel_id?: string | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          responded_at?: string | null
+          responded_by?: string | null
+          response_text?: string | null
+          status?: Database["public"]["Enums"]["information_request_status"]
+          task_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "information_requests_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "information_requests_referral_id_fkey"
+            columns: ["referral_id"]
+            isOneToOne: false
+            referencedRelation: "attorney_referrals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "information_requests_requested_by_counsel_id_fkey"
+            columns: ["requested_by_counsel_id"]
+            isOneToOne: false
+            referencedRelation: "counsel"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       ledger_entries: {
         Row: {
@@ -2807,8 +3182,17 @@ export type Database = {
         Args: { _days: number; _start: string }
         Returns: string
       }
+      attach_revised_packet: {
+        Args: { _notes?: string; _packet_id: string; _referral_id: string }
+        Returns: Json
+      }
       attorney_can_access_case: { Args: { _case_id: string }; Returns: boolean }
+      attorney_can_access_referral: {
+        Args: { _referral_id: string }
+        Returns: boolean
+      }
       attorney_firm_ids: { Args: never; Returns: string[] }
+      client_can_access_case: { Args: { _case_id: string }; Returns: boolean }
       collection_matter_balance: {
         Args: { _matter_id: string }
         Returns: {
@@ -2829,8 +3213,39 @@ export type Database = {
         Args: { _case_id: string; _confirmed_date: string; _notes?: string }
         Returns: Json
       }
+      create_attorney_referral: {
+        Args: {
+          _attorney_id?: string
+          _case_id: string
+          _fee_arrangement?: string
+          _firm_id?: string
+          _idempotency_key?: string
+          _referral_packet_id?: string
+        }
+        Returns: Json
+      }
+      create_information_request: {
+        Args: {
+          _assigned_role?: string
+          _assigned_user_id?: string
+          _blocking?: boolean
+          _case_id: string
+          _category: string
+          _description: string
+          _due_at?: string
+          _idempotency_key?: string
+          _referral_id?: string
+          _related_record_id?: string
+          _related_record_type?: string
+        }
+        Returns: Json
+      }
       current_attorney_id: { Args: never; Returns: string }
       get_user_client_id: { Args: { _user_id: string }; Returns: string }
+      has_blocking_information_request: {
+        Args: { _case_id: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -2875,6 +3290,37 @@ export type Database = {
         Args: { _hold_id: string; _release_reason: string }
         Returns: boolean
       }
+      resolve_information_request: {
+        Args: {
+          _reopen?: boolean
+          _request_id: string
+          _resolution_notes: string
+        }
+        Returns: Json
+      }
+      respond_to_information_request: {
+        Args: {
+          _document_ids?: string[]
+          _idempotency_key?: string
+          _request_id: string
+          _response_text: string
+        }
+        Returns: Json
+      }
+      review_information_request: {
+        Args: { _note?: string; _request_id: string }
+        Returns: Json
+      }
+      transition_attorney_referral: {
+        Args: {
+          _idempotency_key?: string
+          _metadata?: Json
+          _reason?: string
+          _referral_id: string
+          _transition_key: string
+        }
+        Returns: Json
+      }
       transition_matter: {
         Args: {
           _case_id: string
@@ -2885,10 +3331,23 @@ export type Database = {
         }
         Returns: Json
       }
+      withdraw_information_request: {
+        Args: { _reason: string; _request_id: string }
+        Returns: Json
+      }
     }
     Enums: {
       app_role: "super_admin" | "admin" | "client" | "attorney"
       assignment_scope: "attorney_only" | "firm"
+      attorney_referral_status:
+        | "draft"
+        | "sent"
+        | "pending_acceptance"
+        | "accepted"
+        | "declined"
+        | "needs_information"
+        | "withdrawn"
+        | "completed"
       attorney_status: "invited" | "active" | "inactive" | "suspended"
       case_priority: "low" | "normal" | "high"
       case_status:
@@ -2978,6 +3437,12 @@ export type Database = {
         | "restraining_notice"
         | "other"
       firm_member_role: "member" | "firm_admin"
+      information_request_status:
+        | "open"
+        | "responded"
+        | "under_review"
+        | "resolved"
+        | "withdrawn"
       matter_change_class: "hard" | "soft"
       matter_hold_type:
         | "bankruptcy"
@@ -3170,6 +3635,16 @@ export const Constants = {
     Enums: {
       app_role: ["super_admin", "admin", "client", "attorney"],
       assignment_scope: ["attorney_only", "firm"],
+      attorney_referral_status: [
+        "draft",
+        "sent",
+        "pending_acceptance",
+        "accepted",
+        "declined",
+        "needs_information",
+        "withdrawn",
+        "completed",
+      ],
       attorney_status: ["invited", "active", "inactive", "suspended"],
       case_priority: ["low", "normal", "high"],
       case_status: [
@@ -3269,6 +3744,13 @@ export const Constants = {
         "other",
       ],
       firm_member_role: ["member", "firm_admin"],
+      information_request_status: [
+        "open",
+        "responded",
+        "under_review",
+        "resolved",
+        "withdrawn",
+      ],
       matter_change_class: ["hard", "soft"],
       matter_hold_type: [
         "bankruptcy",

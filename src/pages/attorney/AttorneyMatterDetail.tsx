@@ -10,11 +10,13 @@ import StatusBadge from "@/components/StatusBadge";
 import { useAuth } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
 import { packetStatusTone } from "@/lib/attorney";
+import ReferralPanel from "@/components/referral/ReferralPanel";
+import InformationRequestsPanel from "@/components/referral/InformationRequestsPanel";
 import { ArrowLeft, Lock, AlertTriangle, Eye } from "lucide-react";
 
 export default function AttorneyMatterDetail() {
   const { id } = useParams();
-  const { user } = useAuth();
+  const { user, attorney } = useAuth();
   const { toast } = useToast();
   const [matter, setMatter] = useState<any>(null);
   const [notices, setNotices] = useState<any[]>([]);
@@ -167,6 +169,11 @@ export default function AttorneyMatterDetail() {
             <div className="text-muted-foreground">Ledger balance: ${balance.toLocaleString()}</div>
           </CardContent>
         </Card>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <ReferralPanel caseId={id!} actorRole="attorney" actorAttorneyId={attorney?.id} onChanged={load} />
+        <InformationRequestsPanel caseId={id!} viewer="attorney" onChanged={load} />
       </div>
 
       <Card>

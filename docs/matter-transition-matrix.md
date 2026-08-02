@@ -49,3 +49,21 @@ Every non-terminal status has at least one intentional outbound route.
 Holds do not change status. They are recorded in `matter_holds` and evaluated by
 `transition_matter()` against each rule's `blocking_hold_types`. Releasing the last active
 hold clears `cases.is_on_hold`.
+
+## Attorney referral transitions (Phase B, Stage 2)
+
+Matter status and referral status are separate state machines. Referrals never change
+`cases.status`; they drive tasks, timeline events and the attorney queue.
+See `docs/attorney-referral-state-machine.md` for the full matrix, the one-active-referral
+rule, the named-attorney rule and packet version immutability.
+
+| From → To | Key | Actors | Reason |
+|---|---|---|---|
+| draft → sent | `send_referral` | admin | – (packet required) |
+| sent → pending_acceptance | `acknowledge_referral` | admin, attorney | – |
+| pending_acceptance → accepted | `accept_referral` | named attorney | – |
+| pending_acceptance → declined | `decline_referral` | named attorney | required |
+| accepted → needs_information | `request_information` | attorney, admin | required |
+| needs_information → accepted | `information_satisfied` | attorney, admin | – |
+| accepted → completed | `complete_referral` | attorney, admin | – |
+| sent / pending_acceptance / accepted / needs_information → withdrawn | `withdraw_*_referral` | admin | required |

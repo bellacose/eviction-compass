@@ -12,6 +12,8 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { NOTICE_KIND_LABELS, NOTICE_STATUS_LABELS, currency } from "@/lib/notices";
 import NextActionPanel from "@/components/matter/NextActionPanel";
+import InformationRequestsPanel from "@/components/referral/InformationRequestsPanel";
+import ClientReferralStatus from "@/components/referral/ClientReferralStatus";
 
 export default function ClientCaseDetail() {
   const { id } = useParams();
@@ -100,6 +102,10 @@ export default function ClientCaseDetail() {
       </div>
 
       <NextActionPanel caseId={id!} status={caseData.status} readOnly />
+
+      <ClientReferralStatus caseId={id!} />
+
+      <InformationRequestsPanel caseId={id!} viewer="client" />
 
       {/* Timeline */}
       <Card>
