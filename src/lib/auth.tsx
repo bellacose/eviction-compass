@@ -1,7 +1,12 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
-import { fetchAttorneyPrincipal, isActivePrincipal, type AttorneyPrincipal } from "@/lib/attorney";
+import {
+  linkAttorneyUser,
+  isActivePrincipal,
+  needsActivation,
+  type AttorneyPrincipal,
+} from "@/lib/attorney";
 
 type AppRole = "super_admin" | "admin" | "client" | "attorney";
 
@@ -24,6 +29,8 @@ interface AuthContextType {
   isSuperAdmin: boolean;
   isClient: boolean;
   isAttorney: boolean;
+  attorneyNeedsActivation: boolean;
+  refreshAttorney: () => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -38,6 +45,8 @@ const AuthContext = createContext<AuthContextType>({
   isSuperAdmin: false,
   isClient: false,
   isAttorney: false,
+  attorneyNeedsActivation: false,
+  refreshAttorney: async () => {},
   signOut: async () => {},
 });
 
@@ -61,12 +70,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setRoles(nextRoles);
 
     if (nextRoles.includes("attorney")) {
-      // First sign-in after an invitation activates the attorney principal.
-      await supabase.rpc("activate_attorney_account" as any);
-      setAttorney(await fetchAttorneyPrincipal(userId));
+      // Sign-in only links the invited record; activation is a separate, explicit step.
+      setAttorney(await linkAttorneyUser(userId));
     } else {
       setAttorney(null);
     }
+  };
+
+  const refreshAttorney = async () => {
+    if (!user) return;
+    setAttorney(await linkAttorneyUser(user.id));
   };
 
   useEffect(() => {
@@ -127,9 +140,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isSuperAdmin = roles.includes("super_admin");
   const isClient = roles.includes("client");
   const isAttorney = roles.includes("attorney") && isActivePrincipal(attorney);
+  const attorneyNeedsActivation = roles.includes("attorney") && needsActivation(attorney);
 
   return (
-    <AuthContext.Provider value={{ user, session, profile, roles, attorney, loading, isAdmin, isSuperAdmin, isClient, isAttorney, signOut }}>
+    <AuthContext.Provider
+      value={{
+        user, session, profile, roles, attorney, loading,
+        isAdmin, isSuperAdmin, isClient, isAttorney,
+        attorneyNeedsActivation, refreshAttorney, signOut,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
