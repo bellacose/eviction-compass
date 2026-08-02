@@ -1490,6 +1490,7 @@ export type Database = {
           created_at: string
           from_status: Database["public"]["Enums"]["case_status"] | null
           id: string
+          idempotency_key: string | null
           metadata: Json
           performed_by: string | null
           reason: string | null
@@ -1503,6 +1504,7 @@ export type Database = {
           created_at?: string
           from_status?: Database["public"]["Enums"]["case_status"] | null
           id?: string
+          idempotency_key?: string | null
           metadata?: Json
           performed_by?: string | null
           reason?: string | null
@@ -1516,6 +1518,7 @@ export type Database = {
           created_at?: string
           from_status?: Database["public"]["Enums"]["case_status"] | null
           id?: string
+          idempotency_key?: string | null
           metadata?: Json
           performed_by?: string | null
           reason?: string | null
@@ -2464,6 +2467,7 @@ export type Database = {
       transition_matter: {
         Args: {
           _case_id: string
+          _idempotency_key?: string
           _metadata?: Json
           _reason?: string
           _transition_key: string

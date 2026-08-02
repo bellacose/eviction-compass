@@ -4,6 +4,8 @@ import {
   eligibilityLabel,
   isEligibilityConfirmed,
   availableTransitions,
+  isTerminalStatus,
+  newIdempotencyKey,
   type MatterGuardContext,
   type TransitionRule,
 } from "@/lib/transitions";
@@ -126,5 +128,34 @@ describe("filing eligibility", () => {
     expect(eligibilityLabel(confirmed)).toEqual({ date: "2026-09-04", label: "Confirmed" });
     expect(isEligibilityConfirmed(confirmed)).toBe(true);
     expect(confirmed.confirmed).not.toEqual(confirmed.proposed);
+  });
+});
+
+describe("status coverage", () => {
+  const rules: TransitionRule[] = [
+    rule({ transition_key: "close_matter", from_status: "resolved", to_status: "closed", allowed_roles: ["admin"] }),
+    rule({ transition_key: "reopen_matter", from_status: "closed", to_status: "intake", allowed_roles: ["admin"] }),
+  ];
+
+  it("does not treat a status with outbound rules as terminal", () => {
+    expect(isTerminalStatus(rules, "resolved")).toBe(false);
+    expect(isTerminalStatus(rules, "closed")).toBe(false);
+  });
+
+  it("treats a status with no outbound rule as terminal", () => {
+    expect(isTerminalStatus(rules, "filed")).toBe(true);
+  });
+
+  it("never reports terminal before the rules have loaded", () => {
+    expect(isTerminalStatus([], "filed")).toBe(false);
+  });
+});
+
+describe("idempotency keys", () => {
+  it("generates a distinct key per request", () => {
+    const a = newIdempotencyKey();
+    const b = newIdempotencyKey();
+    expect(a).not.toEqual(b);
+    expect(a.length).toBeGreaterThan(8);
   });
 });
