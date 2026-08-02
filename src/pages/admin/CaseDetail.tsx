@@ -22,6 +22,7 @@ import CourtEventDialog from "@/components/admin/CourtEventDialog";
 import ServiceRecordDialog from "@/components/admin/ServiceRecordDialog";
 import PaymentPlanPanel from "@/components/admin/PaymentPlanPanel";
 import NoticesPanel from "@/components/admin/NoticesPanel";
+import MatterTimeline from "@/components/MatterTimeline";
 import NextActionPanel from "@/components/matter/NextActionPanel";
 import MatterActionsPanel from "@/components/matter/MatterActionsPanel";
 import MatterHoldPanel from "@/components/matter/MatterHoldPanel";
@@ -338,9 +339,15 @@ export default function CaseDetail() {
 
         {/* Timeline Tab */}
         <TabsContent value="timeline">
+          <div className="space-y-4">
+          <MatterTimeline caseId={id!} includeInternal refreshToken={workflowKey} />
           <Card>
+            <CardHeader className="pb-2"><CardTitle className="text-sm">Workflow Milestones</CardTitle></CardHeader>
             <CardContent className="p-4">
               <div className="space-y-1">
+                {milestones.length === 0 && (
+                  <p className="text-sm text-muted-foreground">No milestones configured for this matter.</p>
+                )}
                 {milestones.map((m, i) => (
                   <div key={m.id} className="flex items-start gap-3 py-3 border-b last:border-0">
                     <div className="mt-0.5">{milestoneIcon(m.status)}</div>
@@ -365,6 +372,7 @@ export default function CaseDetail() {
               </div>
             </CardContent>
           </Card>
+          </div>
         </TabsContent>
 
         {/* Notices Tab */}

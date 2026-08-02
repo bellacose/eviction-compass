@@ -279,6 +279,23 @@ export type LedgerRowInput = {
 
 const toNumber = (v: string) => (v ? Number(v) || 0 : 0);
 
+/** Ledger line types accepted by the database check constraint. */
+export const LEDGER_CHARGE_TYPES = [
+  { value: "rent", label: "Rent" },
+  { value: "late_fee", label: "Late fee" },
+  { value: "legal_fee", label: "Legal fee" },
+  { value: "court_cost", label: "Court cost" },
+  { value: "damages", label: "Damages" },
+  { value: "cleaning", label: "Cleaning" },
+  { value: "utilities", label: "Utilities" },
+  { value: "nsf_fee", label: "NSF fee" },
+  { value: "other", label: "Other charge" },
+  { value: "payment", label: "Payment" },
+  { value: "credit", label: "Credit / deposit" },
+] as const;
+
+const LEDGER_TYPE_VALUES = LEDGER_CHARGE_TYPES.map((t) => t.value) as readonly string[];
+
 export function ledgerTotals(rows: LedgerRowInput[]) {
   const charges = rows.reduce((s, r) => s + toNumber(r.amount), 0);
   const payments = rows.reduce((s, r) => s + toNumber(r.payment_amount) + toNumber(r.credit_amount), 0);
@@ -292,7 +309,9 @@ export function validateLedgerRows(rows: LedgerRowInput[]): FieldErrors {
   rows.forEach((r, i) => {
     if (!r.entry_date) errors[`${i}.entry_date`] = "Date is required";
     else if (r.entry_date > t) errors[`${i}.entry_date`] = "Date cannot be in the future";
+    else if (r.entry_date < "2000-01-01") errors[`${i}.entry_date`] = "Date is out of range";
     if (!r.charge_type.trim()) errors[`${i}.charge_type`] = "Type is required";
+    else if (!LEDGER_TYPE_VALUES.includes(r.charge_type)) errors[`${i}.charge_type`] = "Pick a valid line type";
     (["amount", "payment_amount", "credit_amount"] as const).forEach((k) => {
       const raw = r[k];
       if (raw !== "" && Number.isNaN(Number(raw))) errors[`${i}.${k}`] = "Must be a number";
