@@ -26,6 +26,8 @@ import NextActionPanel from "@/components/matter/NextActionPanel";
 import MatterActionsPanel from "@/components/matter/MatterActionsPanel";
 import MatterHoldPanel from "@/components/matter/MatterHoldPanel";
 import MatterEligibilityPanel from "@/components/matter/MatterEligibilityPanel";
+import FilingApprovalPanel from "@/components/matter/FilingApprovalPanel";
+import PrivilegedNotesPanel from "@/components/matter/PrivilegedNotesPanel";
 import ReferralPacketPanel from "@/components/matter/ReferralPacketPanel";
 import ReferralPanel from "@/components/referral/ReferralPanel";
 import InformationRequestsPanel from "@/components/referral/InformationRequestsPanel";
@@ -80,7 +82,7 @@ export default function CaseDetail() {
     const [caseRes, milestoneRes, notesRes, courtRes, docsRes, serviceRes, activityRes, ledgerRes] = await Promise.all([
       supabase.from("cases").select("*, clients(company_name, contact_name, email, phone), tenants(full_name, phone, email), properties(address_line1, address_line2, city, state, zip, county)").eq("id", id).single(),
       supabase.from("case_milestones").select("*").eq("case_id", id).order("order_index"),
-      supabase.from("case_notes").select("*, profiles(full_name)").eq("case_id", id).order("created_at", { ascending: false }),
+      supabase.from("case_notes").select("*, profiles(full_name)").eq("case_id", id).neq("visibility", "attorney_privileged").order("created_at", { ascending: false }),
       supabase.from("court_events").select("*").eq("case_id", id).order("start_at"),
       supabase.from("documents").select("*").eq("case_id", id).order("created_at", { ascending: false }),
       supabase.from("service_records").select("*").eq("case_id", id).order("service_date"),
@@ -110,7 +112,13 @@ export default function CaseDetail() {
 
   const addNote = async () => {
     if (!newNote.trim()) return;
-    await supabase.from("case_notes").insert({ case_id: id, note_type: noteType, content: newNote, created_by: user?.id });
+    await supabase.from("case_notes").insert({
+      case_id: id,
+      note_type: noteType,
+      visibility: noteType === "client_update" ? "client_visible" : "admin_internal",
+      content: newNote,
+      created_by: user?.id,
+    });
     setNewNote("");
     toast({ title: noteType === "internal" ? "Internal note added" : "Client update posted" });
     load();
@@ -244,6 +252,7 @@ export default function CaseDetail() {
           <MatterActionsPanel caseId={id!} status={caseData.status} onChanged={() => { setWorkflowKey((k) => k + 1); load(); }} />
           <MatterHoldPanel caseId={id!} onChanged={() => { setWorkflowKey((k) => k + 1); load(); }} />
           <MatterEligibilityPanel caseId={id!} onChanged={() => { setWorkflowKey((k) => k + 1); load(); }} />
+          <FilingApprovalPanel caseId={id!} actorRole="admin" onChanged={() => { setWorkflowKey((k) => k + 1); load(); }} />
         </div>
       </div>
 
@@ -251,6 +260,8 @@ export default function CaseDetail() {
         <ReferralPanel caseId={id!} actorRole="admin" onChanged={() => { setWorkflowKey((k) => k + 1); load(); }} />
         <InformationRequestsPanel caseId={id!} viewer="admin" onChanged={() => { setWorkflowKey((k) => k + 1); load(); }} />
       </div>
+
+      <PrivilegedNotesPanel caseId={id!} viewer="admin" />
 
       <Card>
         <CardContent className="p-4 flex flex-wrap items-center gap-4">
