@@ -1,34 +1,139 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import StatusBadge from "@/components/StatusBadge";
 import { useAuth } from "@/lib/auth";
-import { loadAssignedMatters, type AttorneyMatterRow } from "./AttorneyMatters";
-import { Briefcase, Gavel, PauseCircle, ClipboardCheck } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import {
+  loadAttorneyQueue, groupQueue, QUEUE_GROUPS, type QueueRow, type QueueGroupKey,
+} from "@/lib/attorney-queue";
+import {
+  transitionReferral, referralStatusTone, newIdempotencyKey,
+} from "@/lib/referrals";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 
 export default function AttorneyDashboard() {
-  const { profile } = useAuth();
-  const [rows, setRows] = useState<AttorneyMatterRow[]>([]);
+  const { profile, attorney } = useAuth();
+  const { toast } = useToast();
+  const [rows, setRows] = useState<QueueRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [declining, setDeclining] = useState<QueueRow | null>(null);
+  const [reason, setReason] = useState("");
 
-  useEffect(() => {
-    loadAssignedMatters()
+  const load = useCallback(() => {
+    setLoading(true);
+    loadAttorneyQueue()
       .then(setRows)
       .catch(() => setRows([]))
       .finally(() => setLoading(false));
   }, []);
 
-  const awaitingReview = rows.filter((r) => r.status === "attorney_review");
-  const onHold = rows.filter((r) => r.is_on_hold);
-  const readyToFile = rows.filter((r) => r.status === "ready_to_file");
+  useEffect(load, [load]);
 
-  const cards = [
-    { label: "Assigned matters", value: rows.length, icon: Briefcase },
-    { label: "Awaiting legal review", value: awaitingReview.length, icon: ClipboardCheck },
-    { label: "Ready to file", value: readyToFile.length, icon: Gavel },
-    { label: "On hold", value: onHold.length, icon: PauseCircle },
-  ];
+  const groups = groupQueue(rows);
+
+  const act = async (row: QueueRow, key: string, why?: string) => {
+    if (!row.referralId) return;
+    setBusy(true);
+    try {
+      await transitionReferral(row.referralId, key, why ?? null, {}, newIdempotencyKey());
+      toast({ title: "Referral updated" });
+      setDeclining(null); setReason("");
+      load();
+    } catch (e: any) {
+      toast({ title: "Action blocked", description: e.message, variant: "destructive" });
+    } finally { setBusy(false); }
+  };
+
+  const rowActions = (r: QueueRow) => {
+    const named = !!attorney && (!r.assignedAttorney || true);
+    const out: { label: string; run: () => void; variant?: "outline" }[] = [];
+    if (r.referralStatus === "sent")
+      out.push({ label: "Acknowledge", run: () => act(r, "acknowledge_referral") });
+    if (r.referralStatus === "pending_acceptance" && named) {
+      out.push({ label: "Accept", run: () => act(r, "accept_referral") });
+      out.push({ label: "Decline", variant: "outline", run: () => { setDeclining(r); setReason(""); } });
+    }
+    if (r.openTaskTypes.includes("attorney_review_revised_packet"))
+      out.push({ label: "Review revised packet", variant: "outline", run: () => {} });
+    return out;
+  };
+
+  const Group = ({ k, label }: { k: QueueGroupKey; label: string }) => {
+    const list = groups[k];
+    if (list.length === 0) return null;
+    return (
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base flex items-center gap-2">
+            {label}
+            <Badge variant="secondary">{list.length}</Badge>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          {list.map((r) => (
+            <div key={`${k}-${r.caseId}`} className="rounded-lg border p-3 space-y-2">
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <Link to={`/attorney/matters/${r.caseId}`} className="font-medium text-sm hover:underline">
+                    {r.caseNumber}
+                  </Link>
+                  <div className="text-xs text-muted-foreground truncate">
+                    {r.client} · {r.tenant} · {r.property}
+                    {r.unit ? ` #${r.unit}` : ""}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {r.matterType ? String(r.matterType).replace(/_/g, " ") : "—"} · Balance $
+                    {r.balance.toLocaleString()}
+                    {r.packetVersion ? ` · Packet v${r.packetVersion}` : ""}
+                    {r.assignedAttorney ? ` · ${r.assignedAttorney}` : ""}
+                  </div>
+                </div>
+                <div className="flex flex-wrap items-center gap-1 shrink-0">
+                  {r.referralStatus && (
+                    <Badge variant={referralStatusTone(r.referralStatus)} className="capitalize text-[10px]">
+                      {r.referralStatus.replace(/_/g, " ")}
+                    </Badge>
+                  )}
+                  <StatusBadge status={r.matterStatus} />
+                </div>
+              </div>
+              <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+                <div className="text-muted-foreground">
+                  {r.blockingItem && <span className="text-destructive">{r.blockingItem} · </span>}
+                  {r.nextAction ? `Next: ${r.nextAction}` : "No open task"}
+                  {r.dueDate ? ` · Due ${new Date(r.dueDate).toLocaleDateString()}` : ""}
+                  {r.lastMaterialChange
+                    ? ` · Changed ${new Date(r.lastMaterialChange).toLocaleDateString()}`
+                    : ""}
+                </div>
+                <div className="flex gap-2">
+                  {rowActions(r).map((a) => (
+                    <Button key={a.label} size="sm" variant={a.variant} disabled={busy} onClick={a.run}>
+                      {a.label}
+                    </Button>
+                  ))}
+                  <Button asChild size="sm" variant="ghost">
+                    <Link to={`/attorney/matters/${r.caseId}`}>Open</Link>
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+    );
+  };
+
+  const empty = QUEUE_GROUPS.every((g) => groups[g.key].length === 0);
 
   return (
     <div className="space-y-6">
@@ -36,56 +141,49 @@ export default function AttorneyDashboard() {
         <h1 className="text-2xl font-bold">Attorney Queue</h1>
         <p className="text-sm text-muted-foreground">
           {profile?.full_name ? `Signed in as ${profile.full_name}. ` : ""}
-          You only see matters assigned to you or your firm.
+          You only see matters and referrals assigned to you or your firm.
         </p>
       </div>
 
-      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-        {cards.map((c) => (
-          <Card key={c.label}>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">{c.label}</span>
-                <c.icon className="h-4 w-4 text-muted-foreground" />
-              </div>
-              <div className="text-2xl font-bold mt-1">{loading ? "—" : c.value}</div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {loading ? (
+        <p className="text-sm text-muted-foreground">Loading…</p>
+      ) : empty ? (
+        <Card>
+          <CardContent className="p-8 text-center text-sm text-muted-foreground">
+            Nothing in your queue right now.
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="space-y-4">
+          {QUEUE_GROUPS.map((g) => (
+            <Group key={g.key} k={g.key} label={g.label} />
+          ))}
+        </div>
+      )}
 
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base">Needs your attention</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          {loading ? (
-            <p className="text-sm text-muted-foreground">Loading…</p>
-          ) : awaitingReview.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Nothing is waiting on legal review right now.</p>
-          ) : (
-            awaitingReview.map((r) => (
-              <Link
-                key={r.id}
-                to={`/attorney/matters/${r.id}`}
-                className="flex items-center justify-between rounded-lg border p-3 hover:bg-accent/50 transition-colors"
-              >
-                <div className="min-w-0">
-                  <div className="font-medium text-sm">{r.case_number}</div>
-                  <div className="text-xs text-muted-foreground truncate">
-                    {r.tenants?.full_name || "Unknown tenant"}
-                    {r.properties ? ` · ${r.properties.address_line1}, ${r.properties.city}` : ""}
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  {r.is_on_hold && <Badge variant="destructive" className="text-[10px]">On hold</Badge>}
-                  <StatusBadge status={r.status} />
-                </div>
-              </Link>
-            ))
-          )}
-        </CardContent>
-      </Card>
+      <AlertDialog open={!!declining} onOpenChange={(o) => { if (!o) { setDeclining(null); setReason(""); } }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Decline referral</AlertDialogTitle>
+            <AlertDialogDescription>
+              Declining returns the matter to staff for reassignment. It does not close the matter.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-1">
+            <Label className="text-xs">Reason (required)</Label>
+            <Textarea rows={3} value={reason} onChange={(e) => setReason(e.target.value)} />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={busy || !reason.trim()}
+              onClick={(e) => { e.preventDefault(); declining && act(declining, "decline_referral", reason); }}
+            >
+              Decline
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
