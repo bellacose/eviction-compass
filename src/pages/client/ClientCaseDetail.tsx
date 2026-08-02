@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { NOTICE_KIND_LABELS, NOTICE_STATUS_LABELS, currency } from "@/lib/notices";
+import NextActionPanel from "@/components/matter/NextActionPanel";
 
 export default function ClientCaseDetail() {
   const { id } = useParams();
@@ -97,6 +98,8 @@ export default function ClientCaseDetail() {
           <MessageSquare className="h-3 w-3 mr-1" />Request Update
         </Button>
       </div>
+
+      <NextActionPanel caseId={id!} status={caseData.status} readOnly />
 
       {/* Timeline */}
       <Card>
