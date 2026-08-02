@@ -75,7 +75,7 @@ export default function AdminDashboard() {
         <p className="text-sm text-muted-foreground">Overview of your eviction case pipeline</p>
       </div>
 
-      <NextActionsList basePath="/cases" />
+      <NextActionsList basePath="/admin/cases" />
 
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         {kpiCards.map((k) => (
