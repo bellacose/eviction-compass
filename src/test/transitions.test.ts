@@ -4,6 +4,8 @@ import {
   eligibilityLabel,
   isEligibilityConfirmed,
   availableTransitions,
+  isTerminalStatus,
+  newIdempotencyKey,
   type MatterGuardContext,
   type TransitionRule,
 } from "@/lib/transitions";
