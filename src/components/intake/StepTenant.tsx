@@ -73,9 +73,16 @@ export default function StepTenant({ matter, clientId, save, next, back }: StepP
 
   const load = useCallback(async () => {
     if (!clientId) return;
-    const { data: tenancyRows } = await supabase
-      .from("tenancies").select("tenant_id").eq("client_id", clientId);
-    const ids = Array.from(new Set((tenancyRows ?? []).map((t) => t.tenant_id)));
+    const [{ data: tenancyRows }, { data: caseRows }] = await Promise.all([
+      supabase.from("tenancies").select("tenant_id").eq("client_id", clientId),
+      supabase.from("cases").select("primary_tenant_id").eq("client_id", clientId),
+    ]);
+    const ids = Array.from(
+      new Set([
+        ...(tenancyRows ?? []).map((t) => t.tenant_id),
+        ...(caseRows ?? []).map((c) => c.primary_tenant_id),
+      ].filter(Boolean) as string[]),
+    );
     if (!ids.length) {
       setTenants([]);
       setMode("create");
