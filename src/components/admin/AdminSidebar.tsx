@@ -2,7 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
 import {
   LayoutDashboard, Briefcase, Users, Building2, Settings, LogOut, Shield, Bell,
-  UserCog, Scale, Banknote
+  UserCog, Scale, Banknote, Send
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,7 @@ const navItems = [
   { label: "Cases", icon: Briefcase, href: "/admin/cases" },
   { label: "Clients", icon: Building2, href: "/admin/clients" },
   { label: "Counsel", icon: Scale, href: "/admin/counsel" },
+  { label: "Referrals", icon: Send, href: "/admin/referrals" },
   { label: "Collections", icon: Banknote, href: "/admin/collections" },
   { label: "Users", icon: UserCog, href: "/admin/users", superAdminOnly: true },
   { label: "Settings", icon: Settings, href: "/admin/settings", superAdminOnly: true },

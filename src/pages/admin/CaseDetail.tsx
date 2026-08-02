@@ -27,6 +27,8 @@ import MatterActionsPanel from "@/components/matter/MatterActionsPanel";
 import MatterHoldPanel from "@/components/matter/MatterHoldPanel";
 import MatterEligibilityPanel from "@/components/matter/MatterEligibilityPanel";
 import ReferralPacketPanel from "@/components/matter/ReferralPacketPanel";
+import ReferralPanel from "@/components/referral/ReferralPanel";
+import InformationRequestsPanel from "@/components/referral/InformationRequestsPanel";
 
 const DOCUMENT_CATEGORIES = ["lease", "rent_ledger", "notice", "proof_of_service", "petition_filing", "court_document", "photo", "correspondence", "other"] as const;
 
@@ -243,6 +245,11 @@ export default function CaseDetail() {
           <MatterHoldPanel caseId={id!} onChanged={() => { setWorkflowKey((k) => k + 1); load(); }} />
           <MatterEligibilityPanel caseId={id!} onChanged={() => { setWorkflowKey((k) => k + 1); load(); }} />
         </div>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <ReferralPanel caseId={id!} actorRole="admin" onChanged={() => { setWorkflowKey((k) => k + 1); load(); }} />
+        <InformationRequestsPanel caseId={id!} viewer="admin" onChanged={() => { setWorkflowKey((k) => k + 1); load(); }} />
       </div>
 
       <Card>
