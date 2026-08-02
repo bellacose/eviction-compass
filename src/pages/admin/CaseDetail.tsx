@@ -26,6 +26,7 @@ import NextActionPanel from "@/components/matter/NextActionPanel";
 import MatterActionsPanel from "@/components/matter/MatterActionsPanel";
 import MatterHoldPanel from "@/components/matter/MatterHoldPanel";
 import MatterEligibilityPanel from "@/components/matter/MatterEligibilityPanel";
+import ReferralPacketPanel from "@/components/matter/ReferralPacketPanel";
 
 const DOCUMENT_CATEGORIES = ["lease", "rent_ledger", "notice", "proof_of_service", "petition_filing", "court_document", "photo", "correspondence", "other"] as const;
 
@@ -267,6 +268,7 @@ export default function CaseDetail() {
           <TabsTrigger value="timeline">Timeline</TabsTrigger>
           <TabsTrigger value="documents">Documents</TabsTrigger>
           <TabsTrigger value="notices">Notices</TabsTrigger>
+          <TabsTrigger value="referral">Referral</TabsTrigger>
           <TabsTrigger value="service">Service</TabsTrigger>
           <TabsTrigger value="court">Court</TabsTrigger>
           <TabsTrigger value="notes">Notes</TabsTrigger>
@@ -350,6 +352,10 @@ export default function CaseDetail() {
         {/* Notices Tab */}
         <TabsContent value="notices">
           <NoticesPanel caseId={id!} userId={user?.id} />
+        </TabsContent>
+
+        <TabsContent value="referral">
+          <ReferralPacketPanel caseId={id!} />
         </TabsContent>
 
         {/* Documents Tab */}

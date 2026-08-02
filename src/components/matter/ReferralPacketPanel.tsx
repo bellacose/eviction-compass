@@ -47,7 +47,7 @@ export default function ReferralPacketPanel({ caseId }: { caseId: string }) {
   const load = async () => {
     const [p, c, a] = await Promise.all([
       supabase.from("referral_packets").select("*").eq("case_id", caseId).order("version", { ascending: false }),
-      supabase.from("counsel").select("id, attorney_name, firm_name, status, is_active").order("attorney_name"),
+      supabase.from("counsel").select("id, attorney_name, firm_name, firm_id, status, is_active").order("attorney_name"),
       supabase.from("case_counsel").select("*").eq("case_id", caseId).is("unassigned_at", null).maybeSingle(),
     ]);
     setPackets((p.data || []) as unknown as Packet[]);
