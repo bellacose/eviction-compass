@@ -50,6 +50,9 @@ export default function StepReview({ matter, refresh, back, goTo, isAdmin }: Ste
 
   useEffect(() => { load(); }, [load]);
 
+  // Always review against the saved matter, not a stale in-memory copy.
+  useEffect(() => { void refresh(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   const issues: { label: string; step: number }[] = [];
   if (!matter?.client_id) issues.push({ label: "Client not selected", step: 1 });
   if (!matter?.property_id) issues.push({ label: "Property not selected", step: 2 });
