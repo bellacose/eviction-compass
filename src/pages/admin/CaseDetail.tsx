@@ -22,6 +22,10 @@ import CourtEventDialog from "@/components/admin/CourtEventDialog";
 import ServiceRecordDialog from "@/components/admin/ServiceRecordDialog";
 import PaymentPlanPanel from "@/components/admin/PaymentPlanPanel";
 import NoticesPanel from "@/components/admin/NoticesPanel";
+import NextActionPanel from "@/components/matter/NextActionPanel";
+import MatterActionsPanel from "@/components/matter/MatterActionsPanel";
+import MatterHoldPanel from "@/components/matter/MatterHoldPanel";
+import MatterEligibilityPanel from "@/components/matter/MatterEligibilityPanel";
 
 const DOCUMENT_CATEGORIES = ["lease", "rent_ledger", "notice", "proof_of_service", "petition_filing", "court_document", "photo", "correspondence", "other"] as const;
 
@@ -38,6 +42,7 @@ export default function CaseDetail() {
   const [activity, setActivity] = useState<any[]>([]);
   const [ledgerEntries, setLedgerEntries] = useState<any[]>([]);
   const [newNote, setNewNote] = useState("");
+  const [workflowKey, setWorkflowKey] = useState(0);
   
   // Ledger dialog state
   const [ledgerDialogOpen, setLedgerDialogOpen] = useState(false);
@@ -98,11 +103,7 @@ export default function CaseDetail() {
     load();
   };
 
-  const updateStatus = async (newStatus: string) => {
-    await supabase.from("cases").update({ status: newStatus as any }).eq("id", id);
-    toast({ title: "Status updated" });
-    load();
-  };
+  // Status changes flow exclusively through the transition service (Bible §4.5).
 
   const addNote = async () => {
     if (!newNote.trim()) return;
@@ -233,22 +234,18 @@ export default function CaseDetail() {
         </div>
       </div>
 
-      {/* Status bar */}
+      {/* Workflow */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <NextActionPanel caseId={id!} status={caseData.status} refreshKey={workflowKey} onChanged={load} />
+        <div className="space-y-4">
+          <MatterActionsPanel caseId={id!} status={caseData.status} onChanged={() => { setWorkflowKey((k) => k + 1); load(); }} />
+          <MatterHoldPanel caseId={id!} onChanged={() => { setWorkflowKey((k) => k + 1); load(); }} />
+          <MatterEligibilityPanel caseId={id!} onChanged={() => { setWorkflowKey((k) => k + 1); load(); }} />
+        </div>
+      </div>
+
       <Card>
         <CardContent className="p-4 flex flex-wrap items-center gap-4">
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Status:</span>
-            <Select value={caseData.status} onValueChange={updateStatus}>
-              <SelectTrigger className="w-[180px] h-8 text-sm">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {Object.entries(STATUS_LABELS).map(([k, v]) => (
-                  <SelectItem key={k} value={k}>{v}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
           {nextPending && (
             <Button size="sm" onClick={() => completeMilestone(nextPending.id)}>
               <Check className="h-3 w-3 mr-1" />Complete: {nextPending.label}

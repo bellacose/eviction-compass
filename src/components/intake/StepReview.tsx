@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
 import { MATTER_TYPE_LABELS, formatCurrency, logMatterEvent } from "@/lib/matter";
 import { balancesMatch } from "@/lib/intake-validation";
+import { transitionMatter } from "@/lib/transitions";
 import type { StepProps } from "./types";
 
 export default function StepReview({ matter, refresh, back, goTo, isAdmin }: StepProps) {
@@ -78,18 +79,14 @@ export default function StepReview({ matter, refresh, back, goTo, isAdmin }: Ste
   const submit = async () => {
     if (!caseId || issues.length) return;
     setSubmitting(true);
-    const { data: auth } = await supabase.auth.getUser();
-    const { error } = await supabase.from("cases").update({
-      status: "attorney_review" as never,
-      submitted_at: new Date().toISOString(),
-      submitted_by: auth.user?.id ?? null,
-      intake_step: 10,
-    }).eq("id", caseId);
-    setSubmitting(false);
-    if (error) {
-      toast({ title: "Submission failed", description: error.message, variant: "destructive" });
+    try {
+      await transitionMatter(caseId, "submit_for_review", null);
+    } catch (e) {
+      setSubmitting(false);
+      toast({ title: "Submission failed", description: (e as Error).message, variant: "destructive" });
       return;
     }
+    setSubmitting(false);
     await logMatterEvent({
       caseId,
       eventKey: "matter_submitted",

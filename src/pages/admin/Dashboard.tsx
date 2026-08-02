@@ -7,6 +7,7 @@ import StatusBadge from "@/components/StatusBadge";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { NOTICE_KIND_LABELS, currency } from "@/lib/notices";
+import NextActionsList from "@/components/matter/NextActionsList";
 
 interface KPIs {
   openCases: number;
@@ -73,6 +74,8 @@ export default function AdminDashboard() {
         <h1 className="text-2xl font-bold">Dashboard</h1>
         <p className="text-sm text-muted-foreground">Overview of your eviction case pipeline</p>
       </div>
+
+      <NextActionsList basePath="/admin/cases" />
 
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         {kpiCards.map((k) => (

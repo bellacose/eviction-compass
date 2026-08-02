@@ -279,7 +279,7 @@ export default function NoticesPanel({ caseId, userId, onTimelineChange }: Props
                   Cure by {n.cure_by_date ? format(new Date(n.cure_by_date), "MMM d, yyyy") : "—"}
                 </span>
                 <span className={n.eligible_to_file_date ? "text-foreground" : ""}>
-                  Eligible to file {n.eligible_to_file_date ? format(new Date(n.eligible_to_file_date), "MMM d, yyyy") : "—"}
+                  Proposed eligible to file {n.eligible_to_file_date ? format(new Date(n.eligible_to_file_date), "MMM d, yyyy") : "—"}
                 </span>
               </div>
               {n.notes && <p className="text-xs">{n.notes}</p>}

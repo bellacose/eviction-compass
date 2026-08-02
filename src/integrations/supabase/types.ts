@@ -273,11 +273,15 @@ export type Database = {
           case_type: string
           client_id: string
           closed_date: string | null
+          confirmation_notes: string | null
+          confirmed_eligible_to_file_date: string | null
           court_address: string | null
           court_case_number: string | null
           court_name: string | null
           created_at: string
           current_balance: number | null
+          eligibility_confirmed_at: string | null
+          eligibility_confirmed_by: string | null
           eviction_reason: string
           eviction_reason_other: string | null
           first_unpaid_month: string | null
@@ -302,6 +306,7 @@ export type Database = {
           primary_tenant_id: string | null
           priority: Database["public"]["Enums"]["case_priority"]
           property_id: string | null
+          proposed_eligible_to_file_date: string | null
           status: Database["public"]["Enums"]["case_status"]
           sub_status: string | null
           submitted_at: string | null
@@ -316,11 +321,15 @@ export type Database = {
           case_type?: string
           client_id: string
           closed_date?: string | null
+          confirmation_notes?: string | null
+          confirmed_eligible_to_file_date?: string | null
           court_address?: string | null
           court_case_number?: string | null
           court_name?: string | null
           created_at?: string
           current_balance?: number | null
+          eligibility_confirmed_at?: string | null
+          eligibility_confirmed_by?: string | null
           eviction_reason?: string
           eviction_reason_other?: string | null
           first_unpaid_month?: string | null
@@ -345,6 +354,7 @@ export type Database = {
           primary_tenant_id?: string | null
           priority?: Database["public"]["Enums"]["case_priority"]
           property_id?: string | null
+          proposed_eligible_to_file_date?: string | null
           status?: Database["public"]["Enums"]["case_status"]
           sub_status?: string | null
           submitted_at?: string | null
@@ -359,11 +369,15 @@ export type Database = {
           case_type?: string
           client_id?: string
           closed_date?: string | null
+          confirmation_notes?: string | null
+          confirmed_eligible_to_file_date?: string | null
           court_address?: string | null
           court_case_number?: string | null
           court_name?: string | null
           created_at?: string
           current_balance?: number | null
+          eligibility_confirmed_at?: string | null
+          eligibility_confirmed_by?: string | null
           eviction_reason?: string
           eviction_reason_other?: string | null
           first_unpaid_month?: string | null
@@ -388,6 +402,7 @@ export type Database = {
           primary_tenant_id?: string | null
           priority?: Database["public"]["Enums"]["case_priority"]
           property_id?: string | null
+          proposed_eligible_to_file_date?: string | null
           status?: Database["public"]["Enums"]["case_status"]
           sub_status?: string | null
           submitted_at?: string | null
@@ -1355,6 +1370,169 @@ export type Database = {
           },
         ]
       }
+      matter_holds: {
+        Row: {
+          case_id: string
+          created_at: string
+          held_from_status: Database["public"]["Enums"]["case_status"] | null
+          hold_type: Database["public"]["Enums"]["matter_hold_type"]
+          id: string
+          opened_by: string | null
+          owner_user_id: string | null
+          reason: string | null
+          release_reason: string | null
+          released_at: string | null
+          released_by: string | null
+          review_date: string | null
+          updated_at: string
+        }
+        Insert: {
+          case_id: string
+          created_at?: string
+          held_from_status?: Database["public"]["Enums"]["case_status"] | null
+          hold_type: Database["public"]["Enums"]["matter_hold_type"]
+          id?: string
+          opened_by?: string | null
+          owner_user_id?: string | null
+          reason?: string | null
+          release_reason?: string | null
+          released_at?: string | null
+          released_by?: string | null
+          review_date?: string | null
+          updated_at?: string
+        }
+        Update: {
+          case_id?: string
+          created_at?: string
+          held_from_status?: Database["public"]["Enums"]["case_status"] | null
+          hold_type?: Database["public"]["Enums"]["matter_hold_type"]
+          id?: string
+          opened_by?: string | null
+          owner_user_id?: string | null
+          reason?: string | null
+          release_reason?: string | null
+          released_at?: string | null
+          released_by?: string | null
+          review_date?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "matter_holds_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      matter_transition_rules: {
+        Row: {
+          allowed_roles: string[]
+          blocking_hold_types: Database["public"]["Enums"]["matter_hold_type"][]
+          completes_task_types: string[]
+          created_at: string
+          creates_task_json: Json | null
+          description: string | null
+          from_status: Database["public"]["Enums"]["case_status"]
+          id: string
+          is_active: boolean
+          label: string
+          order_index: number
+          prerequisite_keys: string[]
+          requires_reason: boolean
+          to_status: Database["public"]["Enums"]["case_status"]
+          transition_key: string
+          updated_at: string
+        }
+        Insert: {
+          allowed_roles?: string[]
+          blocking_hold_types?: Database["public"]["Enums"]["matter_hold_type"][]
+          completes_task_types?: string[]
+          created_at?: string
+          creates_task_json?: Json | null
+          description?: string | null
+          from_status: Database["public"]["Enums"]["case_status"]
+          id?: string
+          is_active?: boolean
+          label: string
+          order_index?: number
+          prerequisite_keys?: string[]
+          requires_reason?: boolean
+          to_status: Database["public"]["Enums"]["case_status"]
+          transition_key: string
+          updated_at?: string
+        }
+        Update: {
+          allowed_roles?: string[]
+          blocking_hold_types?: Database["public"]["Enums"]["matter_hold_type"][]
+          completes_task_types?: string[]
+          created_at?: string
+          creates_task_json?: Json | null
+          description?: string | null
+          from_status?: Database["public"]["Enums"]["case_status"]
+          id?: string
+          is_active?: boolean
+          label?: string
+          order_index?: number
+          prerequisite_keys?: string[]
+          requires_reason?: boolean
+          to_status?: Database["public"]["Enums"]["case_status"]
+          transition_key?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      matter_transitions: {
+        Row: {
+          actor_role: string | null
+          case_id: string
+          created_at: string
+          from_status: Database["public"]["Enums"]["case_status"] | null
+          id: string
+          metadata: Json
+          performed_by: string | null
+          reason: string | null
+          requested_by: string | null
+          to_status: Database["public"]["Enums"]["case_status"]
+          transition_key: string
+        }
+        Insert: {
+          actor_role?: string | null
+          case_id: string
+          created_at?: string
+          from_status?: Database["public"]["Enums"]["case_status"] | null
+          id?: string
+          metadata?: Json
+          performed_by?: string | null
+          reason?: string | null
+          requested_by?: string | null
+          to_status: Database["public"]["Enums"]["case_status"]
+          transition_key: string
+        }
+        Update: {
+          actor_role?: string | null
+          case_id?: string
+          created_at?: string
+          from_status?: Database["public"]["Enums"]["case_status"] | null
+          id?: string
+          metadata?: Json
+          performed_by?: string | null
+          reason?: string | null
+          requested_by?: string | null
+          to_status?: Database["public"]["Enums"]["case_status"]
+          transition_key?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "matter_transitions_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       milestone_template_items: {
         Row: {
           auto_offset_days: number | null
@@ -1931,6 +2109,83 @@ export type Database = {
           },
         ]
       }
+      tasks: {
+        Row: {
+          assigned_role: string | null
+          assigned_user_id: string | null
+          blocking: boolean
+          case_id: string
+          completed_at: string | null
+          completed_by: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          due_at: string | null
+          escalation_level: number
+          id: string
+          is_internal: boolean
+          priority: Database["public"]["Enums"]["task_priority"]
+          related_record_id: string | null
+          related_record_type: string | null
+          status: Database["public"]["Enums"]["task_status"]
+          task_type: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_role?: string | null
+          assigned_user_id?: string | null
+          blocking?: boolean
+          case_id: string
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          due_at?: string | null
+          escalation_level?: number
+          id?: string
+          is_internal?: boolean
+          priority?: Database["public"]["Enums"]["task_priority"]
+          related_record_id?: string | null
+          related_record_type?: string | null
+          status?: Database["public"]["Enums"]["task_status"]
+          task_type: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_role?: string | null
+          assigned_user_id?: string | null
+          blocking?: boolean
+          case_id?: string
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          due_at?: string | null
+          escalation_level?: number
+          id?: string
+          is_internal?: boolean
+          priority?: Database["public"]["Enums"]["task_priority"]
+          related_record_id?: string | null
+          related_record_type?: string | null
+          status?: Database["public"]["Enums"]["task_status"]
+          task_type?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tasks_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tenancies: {
         Row: {
           client_id: string
@@ -2169,6 +2424,14 @@ export type Database = {
           write_offs_total: number
         }[]
       }
+      complete_task: {
+        Args: { _note?: string; _task_id: string }
+        Returns: boolean
+      }
+      confirm_filing_eligibility: {
+        Args: { _case_id: string; _confirmed_date: string; _notes?: string }
+        Returns: Json
+      }
       get_user_client_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
@@ -2183,7 +2446,30 @@ export type Database = {
         Args: { _as_of?: string; _case_id: string }
         Returns: number
       }
+      open_matter_hold: {
+        Args: {
+          _case_id: string
+          _hold_type: Database["public"]["Enums"]["matter_hold_type"]
+          _owner_user_id?: string
+          _reason: string
+          _review_date?: string
+        }
+        Returns: string
+      }
       owns_client: { Args: { _client_id: string }; Returns: boolean }
+      release_matter_hold: {
+        Args: { _hold_id: string; _release_reason: string }
+        Returns: boolean
+      }
+      transition_matter: {
+        Args: {
+          _case_id: string
+          _metadata?: Json
+          _reason?: string
+          _transition_key: string
+        }
+        Returns: Json
+      }
     }
     Enums: {
       app_role: "super_admin" | "admin" | "client"
@@ -2274,6 +2560,16 @@ export type Database = {
         | "income_execution"
         | "restraining_notice"
         | "other"
+      matter_hold_type:
+        | "bankruptcy"
+        | "military_review"
+        | "payment_plan"
+        | "attorney_review"
+        | "missing_documentation"
+        | "tenant_dispute"
+        | "court_stay"
+        | "compliance_review"
+        | "administrative"
       matter_type:
         | "non_payment"
         | "holdover"
@@ -2317,6 +2613,8 @@ export type Database = {
         | "conspicuous_nail_mail"
         | "certified_mail"
         | "other"
+      task_priority: "low" | "normal" | "high" | "urgent"
+      task_status: "open" | "in_progress" | "completed" | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2542,6 +2840,17 @@ export const Constants = {
         "restraining_notice",
         "other",
       ],
+      matter_hold_type: [
+        "bankruptcy",
+        "military_review",
+        "payment_plan",
+        "attorney_review",
+        "missing_documentation",
+        "tenant_dispute",
+        "court_stay",
+        "compliance_review",
+        "administrative",
+      ],
       matter_type: [
         "non_payment",
         "holdover",
@@ -2591,6 +2900,8 @@ export const Constants = {
         "certified_mail",
         "other",
       ],
+      task_priority: ["low", "normal", "high", "urgent"],
+      task_status: ["open", "in_progress", "completed", "cancelled"],
     },
   },
 } as const
