@@ -20,6 +20,7 @@ import ClientDetail from "./pages/admin/ClientDetail";
 import UsersManagement from "./pages/admin/UsersManagement";
 import AdminSettings from "./pages/admin/Settings";
 import CounselList from "./pages/admin/CounselList";
+import ReferralsList from "./pages/admin/ReferralsList";
 import CollectionsList from "./pages/admin/CollectionsList";
 import NewCollectionMatter from "./pages/admin/NewCollectionMatter";
 import CollectionMatterDetail from "./pages/admin/CollectionMatterDetail";
@@ -95,6 +96,7 @@ function AppRoutes() {
           <Route path="clients" element={<ClientsList />} />
           <Route path="clients/:id" element={<ClientDetail />} />
           <Route path="counsel" element={<CounselList />} />
+          <Route path="referrals" element={<ReferralsList />} />
           <Route path="collections" element={<CollectionsList />} />
           <Route path="collections/new" element={<NewCollectionMatter />} />
           <Route path="collections/:id" element={<CollectionMatterDetail />} />
