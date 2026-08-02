@@ -34,7 +34,8 @@ export default function ClientCaseDetail() {
       const [caseRes, milestoneRes, notesRes, courtRes, docsRes, plansRes, paymentsRes, noticesRes] = await Promise.all([
         supabase.from("cases").select("*, properties(address_line1, city, state, zip), tenants(full_name)").eq("id", id).single(),
         supabase.from("case_milestones").select("*").eq("case_id", id).order("order_index"),
-        supabase.from("case_notes").select("*, profiles(full_name)").eq("case_id", id).order("created_at", { ascending: false }),
+        supabase.from("case_notes").select("*, profiles(full_name)").eq("case_id", id)
+          .in("visibility", ["client_visible", "system_generated"]).order("created_at", { ascending: false }),
         supabase.from("court_events").select("*").eq("case_id", id).order("start_at"),
         supabase.from("documents").select("*").eq("case_id", id).order("created_at", { ascending: false }),
         supabase.from("payment_plans").select("*").eq("case_id", id).order("created_at", { ascending: false }),

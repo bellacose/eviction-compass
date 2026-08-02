@@ -289,6 +289,62 @@ export type Database = {
           },
         ]
       }
+      balance_snapshots: {
+        Row: {
+          case_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          metadata: Json
+          snapshot_date: string
+          snapshot_type: Database["public"]["Enums"]["balance_snapshot_type"]
+          source_entry_ids: Json
+          source_ledger_version: string | null
+          total_balance: number
+          total_charges: number
+          total_credits: number
+          total_payments: number
+        }
+        Insert: {
+          case_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          metadata?: Json
+          snapshot_date?: string
+          snapshot_type: Database["public"]["Enums"]["balance_snapshot_type"]
+          source_entry_ids?: Json
+          source_ledger_version?: string | null
+          total_balance?: number
+          total_charges?: number
+          total_credits?: number
+          total_payments?: number
+        }
+        Update: {
+          case_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          metadata?: Json
+          snapshot_date?: string
+          snapshot_type?: Database["public"]["Enums"]["balance_snapshot_type"]
+          source_entry_ids?: Json
+          source_ledger_version?: string | null
+          total_balance?: number
+          total_charges?: number
+          total_credits?: number
+          total_payments?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "balance_snapshots_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       case_counsel: {
         Row: {
           assigned_at: string
@@ -421,6 +477,7 @@ export type Database = {
       }
       case_notes: {
         Row: {
+          author_counsel_id: string | null
           case_id: string
           content: string
           created_at: string
@@ -428,8 +485,10 @@ export type Database = {
           id: string
           note_type: Database["public"]["Enums"]["note_type"]
           updated_at: string
+          visibility: Database["public"]["Enums"]["note_visibility"]
         }
         Insert: {
+          author_counsel_id?: string | null
           case_id: string
           content: string
           created_at?: string
@@ -437,8 +496,10 @@ export type Database = {
           id?: string
           note_type?: Database["public"]["Enums"]["note_type"]
           updated_at?: string
+          visibility?: Database["public"]["Enums"]["note_visibility"]
         }
         Update: {
+          author_counsel_id?: string | null
           case_id?: string
           content?: string
           created_at?: string
@@ -446,8 +507,16 @@ export type Database = {
           id?: string
           note_type?: Database["public"]["Enums"]["note_type"]
           updated_at?: string
+          visibility?: Database["public"]["Enums"]["note_visibility"]
         }
         Relationships: [
+          {
+            foreignKeyName: "case_notes_author_counsel_id_fkey"
+            columns: ["author_counsel_id"]
+            isOneToOne: false
+            referencedRelation: "counsel"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "case_notes_case_id_fkey"
             columns: ["case_id"]
@@ -1534,6 +1603,324 @@ export type Database = {
             columns: ["matter_id"]
             isOneToOne: false
             referencedRelation: "collection_matters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      filing_approvals: {
+        Row: {
+          approval_notes: string | null
+          approval_status: Database["public"]["Enums"]["filing_approval_status"]
+          approved_at: string | null
+          attorney_id: string | null
+          balance_snapshot_id: string | null
+          case_id: string
+          created_at: string
+          created_by: string | null
+          eligibility_confirmation_id: string | null
+          id: string
+          idempotency_key: string | null
+          invalidated_at: string | null
+          invalidated_by_change_event_id: string | null
+          invalidation_reason: string | null
+          lease_document_id: string | null
+          notice_manifest: Json
+          packet_manifest: Json
+          questionnaire_snapshot: Json
+          referral_id: string | null
+          referral_packet_id: string | null
+          service_manifest: Json
+          superseded_by_approval_id: string | null
+          supersedes_approval_id: string | null
+          updated_at: string
+          version_number: number
+          withdrawal_reason: string | null
+          withdrawn_at: string | null
+          withdrawn_by: string | null
+        }
+        Insert: {
+          approval_notes?: string | null
+          approval_status?: Database["public"]["Enums"]["filing_approval_status"]
+          approved_at?: string | null
+          attorney_id?: string | null
+          balance_snapshot_id?: string | null
+          case_id: string
+          created_at?: string
+          created_by?: string | null
+          eligibility_confirmation_id?: string | null
+          id?: string
+          idempotency_key?: string | null
+          invalidated_at?: string | null
+          invalidated_by_change_event_id?: string | null
+          invalidation_reason?: string | null
+          lease_document_id?: string | null
+          notice_manifest?: Json
+          packet_manifest?: Json
+          questionnaire_snapshot?: Json
+          referral_id?: string | null
+          referral_packet_id?: string | null
+          service_manifest?: Json
+          superseded_by_approval_id?: string | null
+          supersedes_approval_id?: string | null
+          updated_at?: string
+          version_number?: number
+          withdrawal_reason?: string | null
+          withdrawn_at?: string | null
+          withdrawn_by?: string | null
+        }
+        Update: {
+          approval_notes?: string | null
+          approval_status?: Database["public"]["Enums"]["filing_approval_status"]
+          approved_at?: string | null
+          attorney_id?: string | null
+          balance_snapshot_id?: string | null
+          case_id?: string
+          created_at?: string
+          created_by?: string | null
+          eligibility_confirmation_id?: string | null
+          id?: string
+          idempotency_key?: string | null
+          invalidated_at?: string | null
+          invalidated_by_change_event_id?: string | null
+          invalidation_reason?: string | null
+          lease_document_id?: string | null
+          notice_manifest?: Json
+          packet_manifest?: Json
+          questionnaire_snapshot?: Json
+          referral_id?: string | null
+          referral_packet_id?: string | null
+          service_manifest?: Json
+          superseded_by_approval_id?: string | null
+          supersedes_approval_id?: string | null
+          updated_at?: string
+          version_number?: number
+          withdrawal_reason?: string | null
+          withdrawn_at?: string | null
+          withdrawn_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "filing_approvals_attorney_id_fkey"
+            columns: ["attorney_id"]
+            isOneToOne: false
+            referencedRelation: "counsel"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "filing_approvals_balance_snapshot_id_fkey"
+            columns: ["balance_snapshot_id"]
+            isOneToOne: false
+            referencedRelation: "balance_snapshots"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "filing_approvals_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "filing_approvals_eligibility_confirmation_id_fkey"
+            columns: ["eligibility_confirmation_id"]
+            isOneToOne: false
+            referencedRelation: "filing_eligibility_confirmations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "filing_approvals_invalidated_by_change_event_id_fkey"
+            columns: ["invalidated_by_change_event_id"]
+            isOneToOne: false
+            referencedRelation: "matter_change_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "filing_approvals_lease_document_id_fkey"
+            columns: ["lease_document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "filing_approvals_referral_id_fkey"
+            columns: ["referral_id"]
+            isOneToOne: false
+            referencedRelation: "attorney_referrals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "filing_approvals_referral_packet_id_fkey"
+            columns: ["referral_packet_id"]
+            isOneToOne: false
+            referencedRelation: "referral_packets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "filing_approvals_superseded_by_approval_id_fkey"
+            columns: ["superseded_by_approval_id"]
+            isOneToOne: false
+            referencedRelation: "filing_approvals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "filing_approvals_supersedes_approval_id_fkey"
+            columns: ["supersedes_approval_id"]
+            isOneToOne: false
+            referencedRelation: "filing_approvals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      filing_eligibility_confirmations: {
+        Row: {
+          active_hold_snapshot: Json
+          attorney_id: string | null
+          balance_snapshot_id: string | null
+          blocking_request_count: number
+          case_id: string
+          confirmation_notes: string
+          confirmed_at: string
+          confirmed_eligible_to_file_date: string
+          created_at: string
+          created_by: string | null
+          id: string
+          idempotency_key: string | null
+          invalidated_at: string | null
+          invalidated_by_change_event_id: string | null
+          invalidation_reason: string | null
+          lease_document_id: string | null
+          notice_manifest: Json
+          proposed_eligible_to_file_date: string | null
+          questionnaire_snapshot: Json
+          referral_id: string | null
+          referral_packet_id: string | null
+          service_manifest: Json
+          status: Database["public"]["Enums"]["eligibility_confirmation_status"]
+          superseded_by_confirmation_id: string | null
+          supersedes_confirmation_id: string | null
+          updated_at: string
+          version_number: number
+        }
+        Insert: {
+          active_hold_snapshot?: Json
+          attorney_id?: string | null
+          balance_snapshot_id?: string | null
+          blocking_request_count?: number
+          case_id: string
+          confirmation_notes: string
+          confirmed_at?: string
+          confirmed_eligible_to_file_date: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          idempotency_key?: string | null
+          invalidated_at?: string | null
+          invalidated_by_change_event_id?: string | null
+          invalidation_reason?: string | null
+          lease_document_id?: string | null
+          notice_manifest?: Json
+          proposed_eligible_to_file_date?: string | null
+          questionnaire_snapshot?: Json
+          referral_id?: string | null
+          referral_packet_id?: string | null
+          service_manifest?: Json
+          status?: Database["public"]["Enums"]["eligibility_confirmation_status"]
+          superseded_by_confirmation_id?: string | null
+          supersedes_confirmation_id?: string | null
+          updated_at?: string
+          version_number?: number
+        }
+        Update: {
+          active_hold_snapshot?: Json
+          attorney_id?: string | null
+          balance_snapshot_id?: string | null
+          blocking_request_count?: number
+          case_id?: string
+          confirmation_notes?: string
+          confirmed_at?: string
+          confirmed_eligible_to_file_date?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          idempotency_key?: string | null
+          invalidated_at?: string | null
+          invalidated_by_change_event_id?: string | null
+          invalidation_reason?: string | null
+          lease_document_id?: string | null
+          notice_manifest?: Json
+          proposed_eligible_to_file_date?: string | null
+          questionnaire_snapshot?: Json
+          referral_id?: string | null
+          referral_packet_id?: string | null
+          service_manifest?: Json
+          status?: Database["public"]["Enums"]["eligibility_confirmation_status"]
+          superseded_by_confirmation_id?: string | null
+          supersedes_confirmation_id?: string | null
+          updated_at?: string
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "filing_eligibility_confirmati_invalidated_by_change_event__fkey"
+            columns: ["invalidated_by_change_event_id"]
+            isOneToOne: false
+            referencedRelation: "matter_change_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "filing_eligibility_confirmati_superseded_by_confirmation_i_fkey"
+            columns: ["superseded_by_confirmation_id"]
+            isOneToOne: false
+            referencedRelation: "filing_eligibility_confirmations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "filing_eligibility_confirmation_supersedes_confirmation_id_fkey"
+            columns: ["supersedes_confirmation_id"]
+            isOneToOne: false
+            referencedRelation: "filing_eligibility_confirmations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "filing_eligibility_confirmations_attorney_id_fkey"
+            columns: ["attorney_id"]
+            isOneToOne: false
+            referencedRelation: "counsel"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "filing_eligibility_confirmations_balance_snapshot_id_fkey"
+            columns: ["balance_snapshot_id"]
+            isOneToOne: false
+            referencedRelation: "balance_snapshots"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "filing_eligibility_confirmations_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "filing_eligibility_confirmations_lease_document_id_fkey"
+            columns: ["lease_document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "filing_eligibility_confirmations_referral_id_fkey"
+            columns: ["referral_id"]
+            isOneToOne: false
+            referencedRelation: "attorney_referrals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "filing_eligibility_confirmations_referral_packet_id_fkey"
+            columns: ["referral_packet_id"]
+            isOneToOne: false
+            referencedRelation: "referral_packets"
             referencedColumns: ["id"]
           },
         ]
@@ -3182,6 +3569,10 @@ export type Database = {
         Args: { _days: number; _start: string }
         Returns: string
       }
+      approve_filing_readiness: {
+        Args: { _case_id: string; _idempotency_key?: string; _notes?: string }
+        Returns: Json
+      }
       attach_revised_packet: {
         Args: { _notes?: string; _packet_id: string; _referral_id: string }
         Returns: Json
@@ -3213,6 +3604,18 @@ export type Database = {
         Args: { _case_id: string; _confirmed_date: string; _notes?: string }
         Returns: Json
       }
+      confirm_filing_eligibility_v2: {
+        Args: {
+          _case_id: string
+          _confirmed_date: string
+          _idempotency_key?: string
+          _notes: string
+          _questionnaire_snapshot?: Json
+          _referral_id?: string
+          _referral_packet_id?: string
+        }
+        Returns: Json
+      }
       create_attorney_referral: {
         Args: {
           _attorney_id?: string
@@ -3223,6 +3626,34 @@ export type Database = {
           _referral_packet_id?: string
         }
         Returns: Json
+      }
+      create_balance_snapshot: {
+        Args: {
+          _case_id: string
+          _metadata?: Json
+          _snapshot_type: Database["public"]["Enums"]["balance_snapshot_type"]
+        }
+        Returns: {
+          case_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          metadata: Json
+          snapshot_date: string
+          snapshot_type: Database["public"]["Enums"]["balance_snapshot_type"]
+          source_entry_ids: Json
+          source_ledger_version: string | null
+          total_balance: number
+          total_charges: number
+          total_credits: number
+          total_payments: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "balance_snapshots"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       create_information_request: {
         Args: {
@@ -3277,6 +3708,16 @@ export type Database = {
         Returns: string
       }
       owns_client: { Args: { _client_id: string }; Returns: boolean }
+      process_matter_change_event: {
+        Args: {
+          _case_id: string
+          _change_class: Database["public"]["Enums"]["matter_change_class"]
+          _change_event_id: string
+          _change_key: string
+          _detail?: string
+        }
+        Returns: Json
+      }
       record_matter_change: {
         Args: {
           _case_id: string
@@ -3331,6 +3772,10 @@ export type Database = {
         }
         Returns: Json
       }
+      withdraw_filing_approval: {
+        Args: { _approval_id: string; _reason: string }
+        Returns: Json
+      }
       withdraw_information_request: {
         Args: { _reason: string; _request_id: string }
         Returns: Json
@@ -3349,6 +3794,16 @@ export type Database = {
         | "withdrawn"
         | "completed"
       attorney_status: "invited" | "active" | "inactive" | "suspended"
+      balance_snapshot_type:
+        | "submission"
+        | "five_day_notice"
+        | "fourteen_day_demand"
+        | "filing_eligibility"
+        | "filing_approval"
+        | "filing"
+        | "judgment"
+        | "final_accounting"
+        | "collection_handoff"
       case_priority: "low" | "normal" | "high"
       case_status:
         | "intake"
@@ -3421,6 +3876,12 @@ export type Database = {
         | "photo"
         | "correspondence"
         | "other"
+      eligibility_confirmation_status:
+        | "draft"
+        | "confirmed"
+        | "invalidated"
+        | "superseded"
+        | "withdrawn"
       enforcement_status:
         | "drafted"
         | "filed"
@@ -3436,6 +3897,12 @@ export type Database = {
         | "income_execution"
         | "restraining_notice"
         | "other"
+      filing_approval_status:
+        | "draft"
+        | "approved"
+        | "invalidated"
+        | "withdrawn"
+        | "superseded"
       firm_member_role: "member" | "firm_admin"
       information_request_status:
         | "open"
@@ -3463,6 +3930,12 @@ export type Database = {
         | "other"
       milestone_status: "pending" | "complete" | "overdue" | "skipped"
       note_type: "internal" | "client_update"
+      note_visibility:
+        | "admin_internal"
+        | "client_visible"
+        | "attorney_privileged"
+        | "agency_visible"
+        | "system_generated"
       notice_kind:
         | "five_day_late"
         | "fourteen_day_demand"
@@ -3646,6 +4119,17 @@ export const Constants = {
         "completed",
       ],
       attorney_status: ["invited", "active", "inactive", "suspended"],
+      balance_snapshot_type: [
+        "submission",
+        "five_day_notice",
+        "fourteen_day_demand",
+        "filing_eligibility",
+        "filing_approval",
+        "filing",
+        "judgment",
+        "final_accounting",
+        "collection_handoff",
+      ],
       case_priority: ["low", "normal", "high"],
       case_status: [
         "intake",
@@ -3726,6 +4210,13 @@ export const Constants = {
         "correspondence",
         "other",
       ],
+      eligibility_confirmation_status: [
+        "draft",
+        "confirmed",
+        "invalidated",
+        "superseded",
+        "withdrawn",
+      ],
       enforcement_status: [
         "drafted",
         "filed",
@@ -3742,6 +4233,13 @@ export const Constants = {
         "income_execution",
         "restraining_notice",
         "other",
+      ],
+      filing_approval_status: [
+        "draft",
+        "approved",
+        "invalidated",
+        "withdrawn",
+        "superseded",
       ],
       firm_member_role: ["member", "firm_admin"],
       information_request_status: [
@@ -3773,6 +4271,13 @@ export const Constants = {
       ],
       milestone_status: ["pending", "complete", "overdue", "skipped"],
       note_type: ["internal", "client_update"],
+      note_visibility: [
+        "admin_internal",
+        "client_visible",
+        "attorney_privileged",
+        "agency_visible",
+        "system_generated",
+      ],
       notice_kind: [
         "five_day_late",
         "fourteen_day_demand",
