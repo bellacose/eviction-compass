@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
 import { MATTER_TYPE_LABELS, formatCurrency, logMatterEvent } from "@/lib/matter";
 import { balancesMatch } from "@/lib/intake-validation";
+import { transitionMatter } from "@/lib/transitions";
 import type { StepProps } from "./types";
 
 export default function StepReview({ matter, refresh, back, goTo, isAdmin }: StepProps) {
