@@ -382,6 +382,22 @@ export default function CounselList() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={firmDialogOpen} onOpenChange={setFirmDialogOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Add Firm</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-1.5">
+            <Label>Firm name</Label>
+            <Input value={firmName} onChange={(e) => setFirmName(e.target.value)} placeholder="Smith & Associates" />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setFirmDialogOpen(false)}>Cancel</Button>
+            <Button onClick={createFirm} disabled={!firmName.trim()}>Add</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
