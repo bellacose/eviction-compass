@@ -25,6 +25,7 @@ import NoticesPanel from "@/components/admin/NoticesPanel";
 import NextActionPanel from "@/components/matter/NextActionPanel";
 import MatterActionsPanel from "@/components/matter/MatterActionsPanel";
 import MatterHoldPanel from "@/components/matter/MatterHoldPanel";
+import MatterEligibilityPanel from "@/components/matter/MatterEligibilityPanel";
 
 const DOCUMENT_CATEGORIES = ["lease", "rent_ledger", "notice", "proof_of_service", "petition_filing", "court_document", "photo", "correspondence", "other"] as const;
 
@@ -239,6 +240,7 @@ export default function CaseDetail() {
         <div className="space-y-4">
           <MatterActionsPanel caseId={id!} status={caseData.status} onChanged={() => { setWorkflowKey((k) => k + 1); load(); }} />
           <MatterHoldPanel caseId={id!} onChanged={() => { setWorkflowKey((k) => k + 1); load(); }} />
+          <MatterEligibilityPanel caseId={id!} onChanged={() => { setWorkflowKey((k) => k + 1); load(); }} />
         </div>
       </div>
 
