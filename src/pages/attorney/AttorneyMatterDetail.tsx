@@ -9,7 +9,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import StatusBadge from "@/components/StatusBadge";
 import { useAuth } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Lock } from "lucide-react";
+import { packetStatusTone } from "@/lib/attorney";
+import { ArrowLeft, Lock, AlertTriangle, Eye } from "lucide-react";
 
 export default function AttorneyMatterDetail() {
   const { id } = useParams();
@@ -21,6 +22,7 @@ export default function AttorneyMatterDetail() {
   const [documents, setDocuments] = useState<any[]>([]);
   const [notes, setNotes] = useState<any[]>([]);
   const [tasks, setTasks] = useState<any[]>([]);
+  const [packet, setPacket] = useState<any | null>(null);
   const [newNote, setNewNote] = useState("");
   const [loading, setLoading] = useState(true);
   const [denied, setDenied] = useState(false);
@@ -40,18 +42,20 @@ export default function AttorneyMatterDetail() {
     }
     setMatter(c);
 
-    const [n, l, d, no, t] = await Promise.all([
+    const [n, l, d, no, t, pk] = await Promise.all([
       supabase.from("notices").select("*").eq("case_id", id).order("prepared_date", { ascending: false }),
       supabase.from("ledger_entries").select("*").eq("case_id", id).order("entry_date"),
       supabase.from("documents").select("*").eq("case_id", id).order("created_at", { ascending: false }),
       supabase.from("case_notes").select("*").eq("case_id", id).order("created_at", { ascending: false }),
       supabase.from("tasks").select("*").eq("case_id", id).order("created_at", { ascending: false }),
+      supabase.from("referral_packets").select("*").eq("case_id", id).order("version", { ascending: false }).limit(1).maybeSingle(),
     ]);
     setNotices(n.data || []);
     setLedger(l.data || []);
     setDocuments(d.data || []);
     setNotes(no.data || []);
     setTasks(t.data || []);
+    setPacket(pk.data || null);
     setLoading(false);
   };
 
@@ -107,9 +111,30 @@ export default function AttorneyMatterDetail() {
         </div>
         <div className="flex items-center gap-2">
           {matter.is_on_hold && <Badge variant="destructive">On hold</Badge>}
+          {packet && (
+            <Badge variant={packetStatusTone(packet.status)} className="capitalize">
+              Packet v{packet.version} · {packet.status}
+            </Badge>
+          )}
           <StatusBadge status={matter.status} />
         </div>
       </div>
+
+      {packet?.invalidated_at && (
+        <div className="flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm">
+          <AlertTriangle className="h-4 w-4 mt-0.5 text-destructive" />
+          <span>
+            A material (hard) change invalidated the prior approval: {packet.invalidation_reason}. Wait for a
+            new packet version before relying on this file.
+          </span>
+        </div>
+      )}
+      {packet?.review_flagged_at && !packet?.invalidated_at && (
+        <div className="flex items-start gap-2 rounded-md border bg-muted/50 p-3 text-sm">
+          <Eye className="h-4 w-4 mt-0.5" />
+          <span>Minor (soft) change flagged for your review: {packet.review_reason}. Your approval still stands.</span>
+        </div>
+      )}
 
       <div className="grid gap-4 md:grid-cols-3">
         <Card>

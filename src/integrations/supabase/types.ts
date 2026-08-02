@@ -70,7 +70,6 @@ export type Database = {
       }
       case_counsel: {
         Row: {
-          allow_firm_access: boolean
           assigned_at: string
           case_id: string
           counsel_id: string
@@ -81,10 +80,10 @@ export type Database = {
           notes: string | null
           retainer_amount: number | null
           role: string
+          scope: Database["public"]["Enums"]["assignment_scope"]
           unassigned_at: string | null
         }
         Insert: {
-          allow_firm_access?: boolean
           assigned_at?: string
           case_id: string
           counsel_id: string
@@ -95,10 +94,10 @@ export type Database = {
           notes?: string | null
           retainer_amount?: number | null
           role?: string
+          scope?: Database["public"]["Enums"]["assignment_scope"]
           unassigned_at?: string | null
         }
         Update: {
-          allow_firm_access?: boolean
           assigned_at?: string
           case_id?: string
           counsel_id?: string
@@ -109,6 +108,7 @@ export type Database = {
           notes?: string | null
           retainer_amount?: number | null
           role?: string
+          scope?: Database["public"]["Enums"]["assignment_scope"]
           unassigned_at?: string | null
         }
         Relationships: [
@@ -856,6 +856,8 @@ export type Database = {
       counsel: {
         Row: {
           activated_at: string | null
+          activation_acknowledged_at: string | null
+          activation_terms_version: string | null
           address: string | null
           attorney_name: string
           bar_jurisdictions: string[]
@@ -873,9 +875,12 @@ export type Database = {
           status: Database["public"]["Enums"]["attorney_status"]
           updated_at: string
           user_id: string | null
+          user_linked_at: string | null
         }
         Insert: {
           activated_at?: string | null
+          activation_acknowledged_at?: string | null
+          activation_terms_version?: string | null
           address?: string | null
           attorney_name: string
           bar_jurisdictions?: string[]
@@ -893,9 +898,12 @@ export type Database = {
           status?: Database["public"]["Enums"]["attorney_status"]
           updated_at?: string
           user_id?: string | null
+          user_linked_at?: string | null
         }
         Update: {
           activated_at?: string | null
+          activation_acknowledged_at?: string | null
+          activation_terms_version?: string | null
           address?: string | null
           attorney_name?: string
           bar_jurisdictions?: string[]
@@ -913,6 +921,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["attorney_status"]
           updated_at?: string
           user_id?: string | null
+          user_linked_at?: string | null
         }
         Relationships: [
           {
@@ -1463,6 +1472,93 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      matter_change_events: {
+        Row: {
+          case_id: string
+          change_class: Database["public"]["Enums"]["matter_change_class"]
+          change_key: string
+          created_at: string
+          created_by: string | null
+          detail: string | null
+          id: string
+          invalidated_approval: boolean
+          metadata: Json
+          packet_id: string | null
+        }
+        Insert: {
+          case_id: string
+          change_class: Database["public"]["Enums"]["matter_change_class"]
+          change_key: string
+          created_at?: string
+          created_by?: string | null
+          detail?: string | null
+          id?: string
+          invalidated_approval?: boolean
+          metadata?: Json
+          packet_id?: string | null
+        }
+        Update: {
+          case_id?: string
+          change_class?: Database["public"]["Enums"]["matter_change_class"]
+          change_key?: string
+          created_at?: string
+          created_by?: string | null
+          detail?: string | null
+          id?: string
+          invalidated_approval?: boolean
+          metadata?: Json
+          packet_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "matter_change_events_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matter_change_events_packet_id_fkey"
+            columns: ["packet_id"]
+            isOneToOne: false
+            referencedRelation: "referral_packets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      matter_change_rules: {
+        Row: {
+          change_class: Database["public"]["Enums"]["matter_change_class"]
+          change_key: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          label: string
+          updated_at: string
+        }
+        Insert: {
+          change_class: Database["public"]["Enums"]["matter_change_class"]
+          change_key: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          label: string
+          updated_at?: string
+        }
+        Update: {
+          change_class?: Database["public"]["Enums"]["matter_change_class"]
+          change_key?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          label?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       matter_events: {
         Row: {
@@ -2088,6 +2184,152 @@ export type Database = {
           },
         ]
       }
+      referral_packet_documents: {
+        Row: {
+          created_at: string
+          document_id: string
+          id: string
+          packet_id: string
+        }
+        Insert: {
+          created_at?: string
+          document_id: string
+          id?: string
+          packet_id: string
+        }
+        Update: {
+          created_at?: string
+          document_id?: string
+          id?: string
+          packet_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_packet_documents_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referral_packet_documents_packet_id_fkey"
+            columns: ["packet_id"]
+            isOneToOne: false
+            referencedRelation: "referral_packets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      referral_packets: {
+        Row: {
+          approval_notes: string | null
+          approved_at: string | null
+          approved_by: string | null
+          balance_amount: number
+          balance_as_of: string | null
+          case_id: string
+          counsel_id: string | null
+          created_at: string
+          created_by: string | null
+          firm_id: string | null
+          id: string
+          invalidated_at: string | null
+          invalidation_reason: string | null
+          issued_at: string | null
+          issued_by: string | null
+          notes: string | null
+          review_flagged_at: string | null
+          review_reason: string | null
+          snapshot: Json
+          status: Database["public"]["Enums"]["referral_packet_status"]
+          superseded_at: string | null
+          superseded_by_packet_id: string | null
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          approval_notes?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          balance_amount?: number
+          balance_as_of?: string | null
+          case_id: string
+          counsel_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          firm_id?: string | null
+          id?: string
+          invalidated_at?: string | null
+          invalidation_reason?: string | null
+          issued_at?: string | null
+          issued_by?: string | null
+          notes?: string | null
+          review_flagged_at?: string | null
+          review_reason?: string | null
+          snapshot?: Json
+          status?: Database["public"]["Enums"]["referral_packet_status"]
+          superseded_at?: string | null
+          superseded_by_packet_id?: string | null
+          updated_at?: string
+          version: number
+        }
+        Update: {
+          approval_notes?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          balance_amount?: number
+          balance_as_of?: string | null
+          case_id?: string
+          counsel_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          firm_id?: string | null
+          id?: string
+          invalidated_at?: string | null
+          invalidation_reason?: string | null
+          issued_at?: string | null
+          issued_by?: string | null
+          notes?: string | null
+          review_flagged_at?: string | null
+          review_reason?: string | null
+          snapshot?: Json
+          status?: Database["public"]["Enums"]["referral_packet_status"]
+          superseded_at?: string | null
+          superseded_by_packet_id?: string | null
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_packets_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referral_packets_counsel_id_fkey"
+            columns: ["counsel_id"]
+            isOneToOne: false
+            referencedRelation: "counsel"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referral_packets_firm_id_fkey"
+            columns: ["firm_id"]
+            isOneToOne: false
+            referencedRelation: "firms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referral_packets_superseded_by_packet_id_fkey"
+            columns: ["superseded_by_packet_id"]
+            isOneToOne: false
+            referencedRelation: "referral_packets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       scheduled_payments: {
         Row: {
           amount_due: number
@@ -2552,7 +2794,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      activate_attorney_account: { Args: never; Returns: Json }
+      activate_attorney_account: {
+        Args: {
+          _accept: boolean
+          _bar_jurisdictions?: string[]
+          _bar_number?: string
+          _terms_version: string
+        }
+        Returns: Json
+      }
       add_days_skip_weekends: {
         Args: { _days: number; _start: string }
         Returns: string
@@ -2592,10 +2842,15 @@ export type Database = {
       is_attorney: { Args: never; Returns: boolean }
       is_draft_matter_owner: { Args: { _case_id: string }; Returns: boolean }
       is_firm_admin: { Args: { _firm_id: string }; Returns: boolean }
+      issue_referral_packet: {
+        Args: { _case_id: string; _counsel_id?: string; _notes?: string }
+        Returns: Json
+      }
       ledger_balance_as_of: {
         Args: { _as_of?: string; _case_id: string }
         Returns: number
       }
+      link_attorney_user: { Args: never; Returns: Json }
       open_matter_hold: {
         Args: {
           _case_id: string
@@ -2607,6 +2862,15 @@ export type Database = {
         Returns: string
       }
       owns_client: { Args: { _client_id: string }; Returns: boolean }
+      record_matter_change: {
+        Args: {
+          _case_id: string
+          _change_key: string
+          _detail?: string
+          _metadata?: Json
+        }
+        Returns: Json
+      }
       release_matter_hold: {
         Args: { _hold_id: string; _release_reason: string }
         Returns: boolean
@@ -2624,6 +2888,7 @@ export type Database = {
     }
     Enums: {
       app_role: "super_admin" | "admin" | "client" | "attorney"
+      assignment_scope: "attorney_only" | "firm"
       attorney_status: "invited" | "active" | "inactive" | "suspended"
       case_priority: "low" | "normal" | "high"
       case_status:
@@ -2713,6 +2978,7 @@ export type Database = {
         | "restraining_notice"
         | "other"
       firm_member_role: "member" | "firm_admin"
+      matter_change_class: "hard" | "soft"
       matter_hold_type:
         | "bankruptcy"
         | "military_review"
@@ -2754,6 +3020,13 @@ export type Database = {
         | "unknown"
       payment_frequency: "weekly" | "biweekly" | "monthly"
       payment_plan_status: "active" | "completed" | "cancelled" | "defaulted"
+      referral_packet_status:
+        | "draft"
+        | "issued"
+        | "approved"
+        | "superseded"
+        | "invalidated"
+        | "withdrawn"
       scheduled_payment_status:
         | "scheduled"
         | "paid"
@@ -2896,6 +3169,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["super_admin", "admin", "client", "attorney"],
+      assignment_scope: ["attorney_only", "firm"],
       attorney_status: ["invited", "active", "inactive", "suspended"],
       case_priority: ["low", "normal", "high"],
       case_status: [
@@ -2995,6 +3269,7 @@ export const Constants = {
         "other",
       ],
       firm_member_role: ["member", "firm_admin"],
+      matter_change_class: ["hard", "soft"],
       matter_hold_type: [
         "bankruptcy",
         "military_review",
@@ -3041,6 +3316,14 @@ export const Constants = {
       ],
       payment_frequency: ["weekly", "biweekly", "monthly"],
       payment_plan_status: ["active", "completed", "cancelled", "defaulted"],
+      referral_packet_status: [
+        "draft",
+        "issued",
+        "approved",
+        "superseded",
+        "invalidated",
+        "withdrawn",
+      ],
       scheduled_payment_status: [
         "scheduled",
         "paid",

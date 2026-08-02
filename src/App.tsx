@@ -40,11 +40,12 @@ import AttorneyLayout from "./components/attorney/AttorneyLayout";
 import AttorneyDashboard from "./pages/attorney/AttorneyDashboard";
 import AttorneyMatters from "./pages/attorney/AttorneyMatters";
 import AttorneyMatterDetail from "./pages/attorney/AttorneyMatterDetail";
+import AttorneyActivate from "./pages/attorney/AttorneyActivate";
 
 const queryClient = new QueryClient();
 
 function AppRoutes() {
-  const { user, loading, isAdmin, isClient, isAttorney } = useAuth();
+  const { user, loading, isAdmin, isClient, isAttorney, attorneyNeedsActivation } = useAuth();
 
   if (loading) {
     return (
@@ -60,6 +61,15 @@ function AppRoutes() {
         <Route path="/login" element={<Login />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    );
+  }
+
+  // An invited attorney must complete the explicit activation step before anything else.
+  if (attorneyNeedsActivation && !isAdmin && !isClient) {
+    return (
+      <Routes>
+        <Route path="*" element={<AttorneyActivate />} />
       </Routes>
     );
   }
