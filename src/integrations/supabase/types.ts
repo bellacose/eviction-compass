@@ -2556,6 +2556,8 @@ export type Database = {
         Args: { _days: number; _start: string }
         Returns: string
       }
+      attorney_can_access_case: { Args: { _case_id: string }; Returns: boolean }
+      attorney_firm_ids: { Args: never; Returns: string[] }
       collection_matter_balance: {
         Args: { _matter_id: string }
         Returns: {
@@ -2576,6 +2578,7 @@ export type Database = {
         Args: { _case_id: string; _confirmed_date: string; _notes?: string }
         Returns: Json
       }
+      current_attorney_id: { Args: never; Returns: string }
       get_user_client_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
@@ -2585,7 +2588,9 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_attorney: { Args: never; Returns: boolean }
       is_draft_matter_owner: { Args: { _case_id: string }; Returns: boolean }
+      is_firm_admin: { Args: { _firm_id: string }; Returns: boolean }
       ledger_balance_as_of: {
         Args: { _as_of?: string; _case_id: string }
         Returns: number
