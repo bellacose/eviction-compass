@@ -4,10 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Trash2 } from "lucide-react";
-import { formatCurrency, logMatterEvent } from "@/lib/matter";
+import { formatCurrency } from "@/lib/matter";
 import {
+  LEDGER_CHARGE_TYPES,
   ledgerBalanceIssue,
   ledgerTotals,
   validateLedgerRows,
@@ -38,7 +40,6 @@ const blankRow = (): Row => ({
 export default function StepLedger({ matter, save, refresh, next, back, onTimelineChange }: StepProps) {
   const { toast } = useToast();
   const [rows, setRows] = useState<Row[]>([]);
-  const [deleted, setDeleted] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<FieldErrors>({});
   const caseId = matter?.id as string | undefined;
@@ -73,8 +74,6 @@ export default function StepLedger({ matter, save, refresh, next, back, onTimeli
   };
 
   const remove = (i: number) => {
-    const row = rows[i];
-    if (row.id) setDeleted((d) => [...d, row.id!]);
     setErrors({});
     setRows(rows.filter((_, ri) => ri !== i));
   };
@@ -93,45 +92,25 @@ export default function StepLedger({ matter, save, refresh, next, back, onTimeli
     }
     setSaving(true);
     try {
-      const added = rows.filter((r) => !r.id).length;
-      const updated = rows.filter((r) => r.id).length;
-      const removed = deleted.length;
-
-      if (deleted.length) {
-        const { error } = await supabase.from("ledger_entries").delete().in("id", deleted);
-        if (error) throw new Error(error.message);
-      }
-      const { data: auth } = await supabase.auth.getUser();
-      for (let i = 0; i < rows.length; i++) {
-        const r = rows[i];
-        const payload = {
-          case_id: caseId,
+      // One transactional call: replaces every line, updates the matter balance
+      // and writes the timeline entry together, so a rejected line can never
+      // leave a half-saved ledger behind.
+      const { data, error } = await supabase.rpc("save_ledger", {
+        _case_id: caseId,
+        _lines: rows.map((r) => ({
           entry_date: r.entry_date,
           charge_type: r.charge_type || "rent",
           description: r.description || null,
           amount: num(r.amount),
           payment_amount: num(r.payment_amount),
           credit_amount: num(r.credit_amount),
-          sort_order: i,
-          created_by: auth.user?.id ?? null,
-        };
-        const { error } = r.id
-          ? await supabase.from("ledger_entries").update(payload).eq("id", r.id)
-          : await supabase.from("ledger_entries").insert(payload);
-        if (error) throw new Error(`Line ${i + 1}: ${error.message}`);
-      }
-      setDeleted([]);
-
-      const saved = await save({ current_balance: balance });
-      if (!saved) throw new Error("The matter balance could not be updated");
-
-      await logMatterEvent({
-        caseId,
-        eventKey: "ledger_updated",
-        label: "Rent ledger updated",
-        detail: `${added} line(s) added, ${updated} kept, ${removed} removed — balance ${formatCurrency(balance)}`,
-        metadata: { charges: totalCharges, payments: totalPayments, balance, lines: rows.length },
+        })),
       });
+      if (error) throw new Error(error.message);
+      const savedBalance = Number((data as any)?.balance ?? balance);
+      if (Math.abs(savedBalance - balance) > 0.01) {
+        throw new Error("The saved balance did not match the entered lines — reload and try again");
+      }
       onTimelineChange?.();
       await load();
       // Keep downstream steps (Review) validating against the saved figures.
@@ -163,7 +142,14 @@ export default function StepLedger({ matter, save, refresh, next, back, onTimeli
               </div>
               <div className="space-y-1">
                 <Label className="text-xs">Type</Label>
-                <Input className="h-8" value={r.charge_type} onChange={(e) => update(i, { charge_type: e.target.value })} placeholder="rent" />
+                <Select value={r.charge_type} onValueChange={(v) => update(i, { charge_type: v })}>
+                  <SelectTrigger className="h-8"><SelectValue placeholder="Select type" /></SelectTrigger>
+                  <SelectContent>
+                    {LEDGER_CHARGE_TYPES.map((t) => (
+                      <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <Err name={`${i}.charge_type`} />
               </div>
               <div className="space-y-1 sm:col-span-2">
