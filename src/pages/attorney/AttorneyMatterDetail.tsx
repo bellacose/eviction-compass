@@ -12,6 +12,9 @@ import { useToast } from "@/hooks/use-toast";
 import { packetStatusTone } from "@/lib/attorney";
 import ReferralPanel from "@/components/referral/ReferralPanel";
 import InformationRequestsPanel from "@/components/referral/InformationRequestsPanel";
+import MatterEligibilityPanel from "@/components/matter/MatterEligibilityPanel";
+import FilingApprovalPanel from "@/components/matter/FilingApprovalPanel";
+import PrivilegedNotesPanel from "@/components/matter/PrivilegedNotesPanel";
 import { ArrowLeft, Lock, AlertTriangle, Eye } from "lucide-react";
 
 export default function AttorneyMatterDetail() {
@@ -48,7 +51,7 @@ export default function AttorneyMatterDetail() {
       supabase.from("notices").select("*").eq("case_id", id).order("prepared_date", { ascending: false }),
       supabase.from("ledger_entries").select("*").eq("case_id", id).order("entry_date"),
       supabase.from("documents").select("*").eq("case_id", id).order("created_at", { ascending: false }),
-      supabase.from("case_notes").select("*").eq("case_id", id).order("created_at", { ascending: false }),
+      supabase.from("case_notes").select("*").eq("case_id", id).neq("visibility", "attorney_privileged").order("created_at", { ascending: false }),
       supabase.from("tasks").select("*").eq("case_id", id).order("created_at", { ascending: false }),
       supabase.from("referral_packets").select("*").eq("case_id", id).order("version", { ascending: false }).limit(1).maybeSingle(),
     ]);
@@ -67,7 +70,14 @@ export default function AttorneyMatterDetail() {
     if (!newNote.trim() || !id) return;
     const { error } = await supabase
       .from("case_notes")
-      .insert({ case_id: id, note_type: "internal", content: newNote.trim(), created_by: user?.id });
+      .insert({
+        case_id: id,
+        note_type: "internal",
+        visibility: "admin_internal",
+        content: newNote.trim(),
+        created_by: user?.id,
+        author_counsel_id: attorney?.id ?? null,
+      });
     if (error) {
       toast({ title: "Could not save note", description: error.message, variant: "destructive" });
       return;
@@ -175,6 +185,13 @@ export default function AttorneyMatterDetail() {
         <ReferralPanel caseId={id!} actorRole="attorney" actorAttorneyId={attorney?.id} onChanged={load} />
         <InformationRequestsPanel caseId={id!} viewer="attorney" onChanged={load} />
       </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <MatterEligibilityPanel caseId={id!} actorRole="attorney" onChanged={load} />
+        <FilingApprovalPanel caseId={id!} actorRole="attorney" actorAttorneyId={attorney?.id} onChanged={load} />
+      </div>
+
+      <PrivilegedNotesPanel caseId={id!} viewer="attorney" attorneyId={attorney?.id} />
 
       <Card>
         <CardHeader className="pb-2"><CardTitle className="text-base">Notices</CardTitle></CardHeader>
