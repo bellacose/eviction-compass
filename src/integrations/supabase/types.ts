@@ -2552,6 +2552,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      activate_attorney_account: { Args: never; Returns: Json }
       add_days_skip_weekends: {
         Args: { _days: number; _start: string }
         Returns: string
