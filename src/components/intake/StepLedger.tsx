@@ -35,7 +35,7 @@ const blankRow = (): Row => ({
   credit_amount: "",
 });
 
-export default function StepLedger({ matter, save, next, back, onTimelineChange }: StepProps) {
+export default function StepLedger({ matter, save, refresh, next, back, onTimelineChange }: StepProps) {
   const { toast } = useToast();
   const [rows, setRows] = useState<Row[]>([]);
   const [deleted, setDeleted] = useState<string[]>([]);
@@ -92,40 +92,57 @@ export default function StepLedger({ matter, save, next, back, onTimelineChange 
       return false;
     }
     setSaving(true);
-    const added = rows.filter((r) => !r.id).length;
-    const updated = rows.filter((r) => r.id).length;
-    const removed = deleted.length;
-    if (deleted.length) await supabase.from("ledger_entries").delete().in("id", deleted);
-    const { data: auth } = await supabase.auth.getUser();
-    for (let i = 0; i < rows.length; i++) {
-      const r = rows[i];
-      const payload = {
-        case_id: caseId,
-        entry_date: r.entry_date,
-        charge_type: r.charge_type || "rent",
-        description: r.description || null,
-        amount: num(r.amount),
-        payment_amount: num(r.payment_amount),
-        credit_amount: num(r.credit_amount),
-        sort_order: i,
-        created_by: auth.user?.id ?? null,
-      };
-      if (r.id) await supabase.from("ledger_entries").update(payload).eq("id", r.id);
-      else await supabase.from("ledger_entries").insert(payload);
+    try {
+      const added = rows.filter((r) => !r.id).length;
+      const updated = rows.filter((r) => r.id).length;
+      const removed = deleted.length;
+
+      if (deleted.length) {
+        const { error } = await supabase.from("ledger_entries").delete().in("id", deleted);
+        if (error) throw new Error(error.message);
+      }
+      const { data: auth } = await supabase.auth.getUser();
+      for (let i = 0; i < rows.length; i++) {
+        const r = rows[i];
+        const payload = {
+          case_id: caseId,
+          entry_date: r.entry_date,
+          charge_type: r.charge_type || "rent",
+          description: r.description || null,
+          amount: num(r.amount),
+          payment_amount: num(r.payment_amount),
+          credit_amount: num(r.credit_amount),
+          sort_order: i,
+          created_by: auth.user?.id ?? null,
+        };
+        const { error } = r.id
+          ? await supabase.from("ledger_entries").update(payload).eq("id", r.id)
+          : await supabase.from("ledger_entries").insert(payload);
+        if (error) throw new Error(`Line ${i + 1}: ${error.message}`);
+      }
+      setDeleted([]);
+
+      const saved = await save({ current_balance: balance });
+      if (!saved) throw new Error("The matter balance could not be updated");
+
+      await logMatterEvent({
+        caseId,
+        eventKey: "ledger_updated",
+        label: "Rent ledger updated",
+        detail: `${added} line(s) added, ${updated} kept, ${removed} removed — balance ${formatCurrency(balance)}`,
+        metadata: { charges: totalCharges, payments: totalPayments, balance, lines: rows.length },
+      });
+      onTimelineChange?.();
+      await load();
+      // Keep downstream steps (Review) validating against the saved figures.
+      await refresh();
+      return true;
+    } catch (e) {
+      toast({ title: "Ledger not saved", description: (e as Error).message, variant: "destructive" });
+      return false;
+    } finally {
+      setSaving(false);
     }
-    setDeleted([]);
-    await save({ current_balance: balance });
-    await logMatterEvent({
-      caseId,
-      eventKey: "ledger_updated",
-      label: "Rent ledger updated",
-      detail: `${added} line(s) added, ${updated} kept, ${removed} removed — balance ${formatCurrency(balance)}`,
-      metadata: { charges: totalCharges, payments: totalPayments, balance, lines: rows.length },
-    });
-    onTimelineChange?.();
-    await load();
-    setSaving(false);
-    return true;
   };
 
   const Err = ({ name }: { name: string }) =>
