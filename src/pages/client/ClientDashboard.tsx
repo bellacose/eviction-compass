@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import StatusBadge from "@/components/StatusBadge";
 import { format } from "date-fns";
 import { DollarSign } from "lucide-react";
+import NextActionsList from "@/components/matter/NextActionsList";
 
 export default function ClientDashboard() {
   const [cases, setCases] = useState<any[]>([]);
@@ -39,6 +40,8 @@ export default function ClientDashboard() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">My Cases</h1>
+
+      <NextActionsList basePath="/client/cases" />
 
       {courtEvents.length > 0 && (
         <Card className="border-status-warning/30 bg-status-warning/5">
