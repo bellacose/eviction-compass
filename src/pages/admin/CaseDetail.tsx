@@ -50,6 +50,27 @@ export default function CaseDetail() {
   const [ledgerEntries, setLedgerEntries] = useState<any[]>([]);
   const [newNote, setNewNote] = useState("");
   const [workflowKey, setWorkflowKey] = useState(0);
+  const [editingMatterType, setEditingMatterType] = useState(false);
+
+  const saveMatterType = async (value: string) => {
+    if (!id || value === caseData?.matter_type) { setEditingMatterType(false); return; }
+    const prev = MATTER_TYPE_LABELS[caseData?.matter_type] ?? "—";
+    const { error } = await supabase.from("cases").update({ matter_type: value as any }).eq("id", id);
+    if (error) {
+      toast({ title: "Could not update matter type", description: error.message, variant: "destructive" });
+      return;
+    }
+    await logMatterEvent({
+      caseId: id,
+      eventKey: "matter_type_changed",
+      label: "Matter type changed",
+      detail: `${prev} → ${MATTER_TYPE_LABELS[value] ?? value}`,
+    });
+    setEditingMatterType(false);
+    toast({ title: "Matter type updated" });
+    await load();
+    setWorkflowKey((k) => k + 1);
+  };
   
   // Ledger dialog state
   const [ledgerDialogOpen, setLedgerDialogOpen] = useState(false);
