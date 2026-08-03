@@ -11,6 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft, Plus, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
+import { MATTER_TYPES } from "@/lib/matter";
 
 interface TenantForm {
   firstName: string;
@@ -41,6 +42,7 @@ export default function NewCase() {
   const [propertyCounty, setPropertyCounty] = useState("");
   const [tenants, setTenants] = useState<TenantForm[]>([emptyTenant()]);
   const [caseType, setCaseType] = useState("nonpayment");
+  const [matterType, setMatterType] = useState("non_payment");
   const [priority, setPriority] = useState("normal");
   const [militaryVerified, setMilitaryVerified] = useState(false);
   const [evictionReason, setEvictionReason] = useState("unpaid_rent");
@@ -108,6 +110,7 @@ export default function NewCase() {
     const { data: newCase, error } = await supabase.from("cases").insert({
       client_id: clientId, property_id: property.id, primary_tenant_id: createdTenants[0].id,
       case_type: caseType, priority: priority as any, assigned_admin_id: user?.id,
+      matter_type: matterType as any,
       military_verified: militaryVerified,
       eviction_reason: evictionReason,
       eviction_reason_other: evictionReason === "other" ? evictionReasonOther : null,
@@ -269,6 +272,15 @@ export default function NewCase() {
               )}
             </div>
             <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Matter Type *</Label>
+                <Select value={matterType} onValueChange={setMatterType}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {MATTER_TYPES.map((m) => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
               <div>
                 <Label>Case Type</Label>
                 <Select value={caseType} onValueChange={setCaseType}>

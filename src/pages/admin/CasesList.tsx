@@ -14,6 +14,7 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { MATTER_TYPE_LABELS } from "@/lib/matter";
 type SortColumn = "case_number" | "client" | "tenant" | "property" | "status" | "priority" | "updated" | null;
 
 export default function CasesList() {
@@ -258,6 +259,7 @@ export default function CasesList() {
                 <TableHead className="cursor-pointer select-none" onClick={() => handleSort("status")}>
                   <span className="inline-flex items-center">Status<SortIcon column="status" /></span>
                 </TableHead>
+                <TableHead className="hidden lg:table-cell">Matter Type</TableHead>
                 <TableHead className="hidden md:table-cell cursor-pointer select-none" onClick={() => handleSort("priority")}>
                   <span className="inline-flex items-center">Priority<SortIcon column="priority" /></span>
                 </TableHead>
@@ -268,9 +270,9 @@ export default function CasesList() {
             </TableHeader>
             <TableBody>
               {loading ? (
-                <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Loading…</TableCell></TableRow>
+                <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">Loading…</TableCell></TableRow>
               ) : sorted.length === 0 ? (
-                <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">No cases found</TableCell></TableRow>
+                <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">No cases found</TableCell></TableRow>
               ) : (
                 sorted.map((c) => (
                   <TableRow
@@ -290,6 +292,11 @@ export default function CasesList() {
                       {(c.properties as any)?.address_line1}, {(c.properties as any)?.city}
                     </TableCell>
                     <TableCell><StatusBadge status={c.status} /></TableCell>
+                    <TableCell className="hidden lg:table-cell">
+                      <Badge variant="outline" className="text-xs">
+                        {MATTER_TYPE_LABELS[c.matter_type] ?? "—"}
+                      </Badge>
+                    </TableCell>
                     <TableCell className="hidden md:table-cell">
                       <Badge variant="secondary" className={cn("text-xs", PRIORITY_COLORS[c.priority])}>{c.priority}</Badge>
                     </TableCell>
