@@ -11,10 +11,12 @@ Every non-terminal status has at least one intentional outbound route.
 | draft | Submit for attorney review (`submit_for_review`) | attorney_review | client, admin | no | intake_complete | — | complete_intake | attorney_review |
 | draft | Withdraw matter (`withdraw_matter_draft`) | closed | client, admin | yes | — | — | — | — |
 | intake | Resubmit matter (`resubmit_matter`) | attorney_review | client, admin | no | — | bankruptcy, compliance_review | supply_information | attorney_review |
+| intake | Resolve matter (no court action) (`resolve_early_intake`) | resolved | admin | yes | — | — | supply_information | — |
 | intake | Withdraw matter (`withdraw_matter_intake`) | closed | client, admin | yes | — | — | — | — |
 | attorney_review | Approve notice route (`approve_notice_route`) | notice_preparation | admin | no | — | bankruptcy, military_review, compliance_review, tenant_dispute | attorney_review | prepare_notice |
 | attorney_review | Approve direct filing (`approve_direct_filing`) | ready_to_file | admin | yes | — | bankruptcy, military_review, compliance_review | attorney_review | — |
 | attorney_review | Request more information (`request_information`) | intake | admin | yes | — | — | attorney_review | supply_information |
+| attorney_review | Resolve matter (no court action) (`resolve_early_attorney_review`) | resolved | admin | yes | — | — | attorney_review | — |
 | attorney_review | Withdraw matter (`withdraw_matter_review`) | closed | client, admin | yes | — | — | attorney_review | — |
 | notice_preparation | Record notice service (`record_notice_service`) | notice_served | admin | no | notice_served_recorded | bankruptcy, compliance_review | prepare_notice | — |
 | notice_preparation | Cancel matter (`cancel_matter_notice_prep`) | closed | admin | yes | — | — | — | — |
