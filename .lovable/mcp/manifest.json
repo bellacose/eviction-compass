@@ -1,0 +1,357 @@
+{
+  "version": 1,
+  "sdk_version": "0.26.1",
+  "path": "/functions/v1/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://fyvwavnyndvyganyknaa.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "evict-os",
+      "version": "1.0.0",
+      "title": "Evict OS"
+    },
+    "tools": [
+      {
+        "name": "list_matters",
+        "title": "List matters",
+        "description": "List eviction and collection matters visible to the signed-in user.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": [
+                "intake",
+                "notice_preparation",
+                "notice_served",
+                "waiting_period",
+                "ready_to_file",
+                "filed",
+                "court_scheduled",
+                "in_court_process",
+                "outcome_pending",
+                "resolved",
+                "closed",
+                "on_hold",
+                "draft",
+                "attorney_review"
+              ],
+              "description": "Filter by case status."
+            },
+            "matter_type": {
+              "type": "string",
+              "enum": [
+                "non_payment",
+                "holdover",
+                "lease_violation",
+                "former_tenant_collection",
+                "judgment_collection",
+                "other"
+              ],
+              "description": "Filter by matter type."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "description": "Max results to return (default 20)."
+            },
+            "offset": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Offset for pagination (default 0)."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_matter_summary",
+        "title": "Get matter summary",
+        "description": "Return a single matter's header, status, matter type, and current balance.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "case_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The case/matter UUID."
+            }
+          },
+          "required": [
+            "case_id"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_matter_events",
+        "title": "List matter events",
+        "description": "Return the chronological timeline/events for a single matter.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "case_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The case/matter UUID."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "description": "Max events to return (default 20)."
+            }
+          },
+          "required": [
+            "case_id"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_matter_documents",
+        "title": "List matter documents",
+        "description": "List documents for a matter. For admin users all documents are returned; for client users only client-visible documents are returned.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "case_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The case/matter UUID."
+            },
+            "category": {
+              "type": "string",
+              "enum": [
+                "lease",
+                "rent_ledger",
+                "notice",
+                "proof_of_service",
+                "petition_filing",
+                "court_document",
+                "photo",
+                "correspondence",
+                "other"
+              ],
+              "description": "Filter by document category."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "description": "Max documents to return (default 20)."
+            }
+          },
+          "required": [
+            "case_id"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_court_events",
+        "title": "List court events",
+        "description": "Return upcoming court events for the signed-in user's scope.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "case_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Optional case/matter UUID to restrict events."
+            },
+            "from": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Optional ISO start date (default now)."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "description": "Max events to return (default 20)."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_notifications",
+        "title": "List notifications",
+        "description": "Return unread in-app notifications for the signed-in user.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": [
+                "queued",
+                "sent",
+                "failed",
+                "read"
+              ],
+              "description": "Filter by notification status (default sent)."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "description": "Max notifications to return (default 20)."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_collection_matters",
+        "title": "List collection matters",
+        "description": "Return collection/debt matters visible to the signed-in user.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": [
+                "open",
+                "in_house",
+                "placed_with_agency",
+                "judgment_sold",
+                "in_enforcement",
+                "settled",
+                "written_off",
+                "paid"
+              ],
+              "description": "Filter by collection status."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "description": "Max results to return (default 20)."
+            },
+            "offset": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Offset for pagination (default 0)."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_collection_balance",
+        "title": "Get collection balance",
+        "description": "Return the current balance and recent activity for a collection matter.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "collection_matter_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The collection matter UUID."
+            }
+          },
+          "required": [
+            "collection_matter_id"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "log_client_update",
+        "title": "Log client update",
+        "description": "Post a client-visible update note on a matter and notify the client. Admin-only.",
+        "annotations": {
+          "readOnlyHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "case_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The case/matter UUID."
+            },
+            "content": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2000,
+              "description": "The client-facing update message."
+            }
+          },
+          "required": [
+            "case_id",
+            "content"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}

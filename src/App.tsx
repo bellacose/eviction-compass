@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from "@/lib/auth";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import ResetPassword from "./pages/ResetPassword";
+import OAuthConsent from "./pages/OAuthConsent";
 
 // Admin
 import AdminLayout from "./components/admin/AdminLayout";
@@ -61,6 +62,7 @@ function AppRoutes() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     );
@@ -83,6 +85,7 @@ function AppRoutes() {
       <Route path="/" element={<Navigate to={defaultPath} replace />} />
       <Route path="/login" element={<Navigate to={defaultPath} replace />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
 
       {/* Admin routes */}
       {isAdmin && (
