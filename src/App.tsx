@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from "@/lib/auth";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import ResetPassword from "./pages/ResetPassword";
+import OAuthConsent from "./pages/OAuthConsent";
 
 // Admin
 import AdminLayout from "./components/admin/AdminLayout";
