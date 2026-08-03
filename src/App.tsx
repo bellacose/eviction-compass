@@ -85,6 +85,7 @@ function AppRoutes() {
       <Route path="/" element={<Navigate to={defaultPath} replace />} />
       <Route path="/login" element={<Navigate to={defaultPath} replace />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
 
       {/* Admin routes */}
       {isAdmin && (
