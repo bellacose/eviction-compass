@@ -9,7 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import StatusBadge from "@/components/StatusBadge";
 import { STATUS_LABELS, MILESTONE_STATUS_COLORS } from "@/lib/case-utils";
-import { ArrowLeft, Check, Circle, AlertCircle, Clock, SkipForward, Upload, Send, Plus, Pencil, Trash2, Download, Eye, EyeOff, DollarSign } from "lucide-react";
+import { ArrowLeft, Check, Circle, AlertCircle, Clock, SkipForward, Upload, Send, Plus, Pencil, Trash2, Download, Eye, EyeOff, DollarSign, ChevronDown } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -51,6 +52,7 @@ export default function CaseDetail() {
   const [newNote, setNewNote] = useState("");
   const [workflowKey, setWorkflowKey] = useState(0);
   const [editingMatterType, setEditingMatterType] = useState(false);
+  const [workflowOpen, setWorkflowOpen] = useState(false);
 
   const saveMatterType = async (value: string) => {
     if (!id || value === caseData?.matter_type) { setEditingMatterType(false); return; }
@@ -256,35 +258,68 @@ export default function CaseDetail() {
 
   return (
     <div className="space-y-4">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" asChild><Link to="/admin/cases"><ArrowLeft className="h-4 w-4" /></Link></Button>
-        <div className="flex-1">
-          <div className="flex items-center gap-3">
-            <h1 className="text-xl font-bold font-mono">{caseData.case_number}</h1>
-            <StatusBadge status={caseData.status} />
+      {/* Matter header */}
+      <Card>
+        <CardContent className="p-4 space-y-3">
+          <div className="flex items-start gap-3">
+            <Button variant="ghost" size="icon" asChild className="-ml-2"><Link to="/admin/cases"><ArrowLeft className="h-4 w-4" /></Link></Button>
+            <div className="flex-1 min-w-0">
+              <h1 className="text-xl font-bold font-mono">{caseData.case_number}</h1>
+              <p className="text-sm text-muted-foreground truncate">
+                {(caseData.tenants as any)?.full_name}
+                {(caseData.properties as any)?.address_line1 ? ` — ${(caseData.properties as any).address_line1}, ${(caseData.properties as any).city ?? ""}` : ""}
+              </p>
+            </div>
           </div>
-          <p className="text-sm text-muted-foreground">{(caseData.clients as any)?.company_name} — {(caseData.tenants as any)?.full_name}</p>
-        </div>
-      </div>
 
-      {/* Workflow */}
-      <div className="grid gap-4 md:grid-cols-2">
-        <NextActionPanel caseId={id!} status={caseData.status} refreshKey={workflowKey} onChanged={load} />
-        <div className="space-y-4">
-          <MatterActionsPanel caseId={id!} status={caseData.status} onChanged={() => { setWorkflowKey((k) => k + 1); load(); }} />
-          <MatterHoldPanel caseId={id!} onChanged={() => { setWorkflowKey((k) => k + 1); load(); }} />
-          <MatterEligibilityPanel caseId={id!} onChanged={() => { setWorkflowKey((k) => k + 1); load(); }} />
-          <FilingApprovalPanel caseId={id!} actorRole="admin" onChanged={() => { setWorkflowKey((k) => k + 1); load(); }} />
-        </div>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2">
-        <ReferralPanel caseId={id!} actorRole="admin" onChanged={() => { setWorkflowKey((k) => k + 1); load(); }} />
-        <InformationRequestsPanel caseId={id!} viewer="admin" onChanged={() => { setWorkflowKey((k) => k + 1); load(); }} />
-      </div>
-
-      <PrivilegedNotesPanel caseId={id!} viewer="admin" />
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 border-t pt-3">
+            <div>
+              <div className="text-xs text-muted-foreground mb-1">Status</div>
+              <StatusBadge status={caseData.status} />
+              <div className="text-[11px] text-muted-foreground mt-1">Changes via Matter Actions</div>
+            </div>
+            <div>
+              <div className="text-xs text-muted-foreground mb-1">Matter Type</div>
+              {editingMatterType ? (
+                <div className="flex items-center gap-1">
+                  <Select value={caseData.matter_type ?? "non_payment"} onValueChange={(v) => saveMatterType(v)}>
+                    <SelectTrigger className="h-8 w-[180px]"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {MATTER_TYPES.map((m) => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                  <Button size="sm" variant="ghost" className="h-8 px-2" onClick={() => setEditingMatterType(false)}>Cancel</Button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1">
+                  <Badge variant="outline" className="text-xs">{MATTER_TYPE_LABELS[caseData.matter_type] ?? "—"}</Badge>
+                  <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => setEditingMatterType(true)}>
+                    <Pencil className="h-3 w-3" />
+                  </Button>
+                </div>
+              )}
+            </div>
+            <div>
+              <div className="text-xs text-muted-foreground mb-1">Client</div>
+              <div className="text-sm font-medium truncate">{(caseData.clients as any)?.company_name ?? "—"}</div>
+            </div>
+            <div>
+              <div className="text-xs text-muted-foreground mb-1">Balance Owed</div>
+              <div className="text-sm font-mono font-medium">
+                ${ledgerEntries.reduce((sum: number, e: any) => sum + Number(e.amount), 0).toFixed(2)}
+              </div>
+            </div>
+            <div>
+              <div className="text-xs text-muted-foreground mb-1">Opened</div>
+              <div className="text-sm">{caseData.opened_date ? format(new Date(caseData.opened_date), "MMM d, yyyy") : "—"}</div>
+            </div>
+            <div>
+              <div className="text-xs text-muted-foreground mb-1">Priority</div>
+              <div className="text-sm capitalize">{caseData.priority}</div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardContent className="p-4 flex flex-wrap items-center gap-4">
@@ -324,39 +359,6 @@ export default function CaseDetail() {
             <Card>
               <CardHeader><CardTitle className="text-sm">Case Info</CardTitle></CardHeader>
               <CardContent className="space-y-2 text-sm">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-muted-foreground">Matter Type</span>
-                  {editingMatterType ? (
-                    <div className="flex items-center gap-2">
-                      <Select
-                        value={caseData.matter_type ?? "non_payment"}
-                        onValueChange={(v) => saveMatterType(v)}
-                      >
-                        <SelectTrigger className="h-8 w-[210px]"><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          {MATTER_TYPES.map((m) => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                      <Button size="sm" variant="ghost" className="h-8" onClick={() => setEditingMatterType(false)}>Cancel</Button>
-                    </div>
-                  ) : (
-                    <span className="flex items-center gap-2">
-                      <Badge variant="outline" className="text-xs">
-                        {MATTER_TYPE_LABELS[caseData.matter_type] ?? "—"}
-                      </Badge>
-                      <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => setEditingMatterType(true)}>
-                        <Pencil className="h-3 w-3" />
-                      </Button>
-                    </span>
-                  )}
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Status</span>
-                  <StatusBadge status={caseData.status} />
-                </div>
-                <p className="text-xs text-muted-foreground -mt-1">
-                  Status changes only through the Next Action / Matter Actions panel above.
-                </p>
                 <div className="flex justify-between"><span className="text-muted-foreground">Case Type</span><span className="capitalize">{caseData.case_type}</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">Jurisdiction</span><span>{caseData.jurisdiction_county}, {caseData.jurisdiction_state}</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">Opened</span><span>{format(new Date(caseData.opened_date), "MMM d, yyyy")}</span></div>
@@ -671,6 +673,36 @@ export default function CaseDetail() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Workflow */}
+      <div className="space-y-4">
+        <NextActionPanel caseId={id!} status={caseData.status} refreshKey={workflowKey} onChanged={load} />
+        <Collapsible open={workflowOpen} onOpenChange={setWorkflowOpen}>
+          <CollapsibleTrigger asChild>
+            <Button variant="outline" className="w-full justify-between">
+              <span>Workflow tools — actions, holds, eligibility, filing, referral, requests, privileged notes</span>
+              <ChevronDown className={cn("h-4 w-4 transition-transform", workflowOpen && "rotate-180")} />
+            </Button>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="space-y-4 pt-4">
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-4">
+                <MatterActionsPanel caseId={id!} status={caseData.status} onChanged={() => { setWorkflowKey((k) => k + 1); load(); }} />
+                <MatterHoldPanel caseId={id!} onChanged={() => { setWorkflowKey((k) => k + 1); load(); }} />
+              </div>
+              <div className="space-y-4">
+                <MatterEligibilityPanel caseId={id!} onChanged={() => { setWorkflowKey((k) => k + 1); load(); }} />
+                <FilingApprovalPanel caseId={id!} actorRole="admin" onChanged={() => { setWorkflowKey((k) => k + 1); load(); }} />
+              </div>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              <ReferralPanel caseId={id!} actorRole="admin" onChanged={() => { setWorkflowKey((k) => k + 1); load(); }} />
+              <InformationRequestsPanel caseId={id!} viewer="admin" onChanged={() => { setWorkflowKey((k) => k + 1); load(); }} />
+            </div>
+            <PrivilegedNotesPanel caseId={id!} viewer="admin" />
+          </CollapsibleContent>
+        </Collapsible>
+      </div>
 
       {/* Court Event Dialog */}
       <CourtEventDialog
