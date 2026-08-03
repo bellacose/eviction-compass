@@ -62,6 +62,7 @@ function AppRoutes() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     );
