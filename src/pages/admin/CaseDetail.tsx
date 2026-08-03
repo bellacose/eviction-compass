@@ -52,6 +52,7 @@ export default function CaseDetail() {
   const [newNote, setNewNote] = useState("");
   const [workflowKey, setWorkflowKey] = useState(0);
   const [editingMatterType, setEditingMatterType] = useState(false);
+  const [workflowOpen, setWorkflowOpen] = useState(false);
 
   const saveMatterType = async (value: string) => {
     if (!id || value === caseData?.matter_type) { setEditingMatterType(false); return; }
