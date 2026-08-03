@@ -53,8 +53,8 @@ export default function OAuthConsent() {
   async function decide(approve: boolean) {
     setBusy(true);
     const { data, error } = approve
-      ? await supabase.auth.oauth.approveAuthorization(authorizationId)
-      : await supabase.auth.oauth.denyAuthorization(authorizationId);
+      ? await oauthApi.approveAuthorization(authorizationId)
+      : await oauthApi.denyAuthorization(authorizationId);
     if (error) {
       setBusy(false);
       return setError(error.message);
