@@ -270,6 +270,11 @@ export default function CaseDetail() {
                 {(caseData.properties as any)?.address_line1 ? ` — ${(caseData.properties as any).address_line1}, ${(caseData.properties as any).city ?? ""}` : ""}
               </p>
             </div>
+            <Button variant="outline" size="sm" asChild className="shrink-0">
+              <Link to={`/admin/matters/${id}`}>
+                {caseData.submitted_at ? "Open intake wizard" : "Complete full intake"}
+              </Link>
+            </Button>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 border-t pt-3">

@@ -188,6 +188,13 @@ export default function MatterIntake() {
         </p>
       )}
 
+      {!locked && matter && !matter.intake_step && (
+        <p className="rounded-md border border-border bg-muted/40 p-3 text-sm text-muted-foreground">
+          This matter was started as a Quick Case. Work through the steps below to fill in the
+          remaining intake detail — unit, tenancy, ledger, documents and legal questions.
+        </p>
+      )}
+
       <StepComponent {...stepProps} />
 
       {matter?.id && <MatterTimeline caseId={matter.id} includeInternal={isAdmin} refreshToken={timelineTick} />}
