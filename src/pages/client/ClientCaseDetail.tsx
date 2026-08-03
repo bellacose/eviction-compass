@@ -97,6 +97,11 @@ export default function ClientCaseDetail() {
             {(caseData.properties as any)?.address_line1}, {(caseData.properties as any)?.city} — {(caseData.tenants as any)?.full_name}
           </p>
         </div>
+        {caseData.status === "draft" && (
+          <Button variant="outline" size="sm" asChild>
+            <Link to={`/client/matters/${id}`}>Complete full intake</Link>
+          </Button>
+        )}
         <Button variant="outline" size="sm" onClick={requestUpdate}>
           <MessageSquare className="h-3 w-3 mr-1" />Request Update
         </Button>
