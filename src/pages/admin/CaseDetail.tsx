@@ -32,6 +32,7 @@ import PrivilegedNotesPanel from "@/components/matter/PrivilegedNotesPanel";
 import ReferralPacketPanel from "@/components/matter/ReferralPacketPanel";
 import ReferralPanel from "@/components/referral/ReferralPanel";
 import InformationRequestsPanel from "@/components/referral/InformationRequestsPanel";
+import { MATTER_TYPES, MATTER_TYPE_LABELS, logMatterEvent } from "@/lib/matter";
 
 const DOCUMENT_CATEGORIES = ["lease", "rent_ledger", "notice", "proof_of_service", "petition_filing", "court_document", "photo", "correspondence", "other"] as const;
 
@@ -302,6 +303,39 @@ export default function CaseDetail() {
             <Card>
               <CardHeader><CardTitle className="text-sm">Case Info</CardTitle></CardHeader>
               <CardContent className="space-y-2 text-sm">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-muted-foreground">Matter Type</span>
+                  {editingMatterType ? (
+                    <div className="flex items-center gap-2">
+                      <Select
+                        value={caseData.matter_type ?? "non_payment"}
+                        onValueChange={(v) => saveMatterType(v)}
+                      >
+                        <SelectTrigger className="h-8 w-[210px]"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {MATTER_TYPES.map((m) => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                      <Button size="sm" variant="ghost" className="h-8" onClick={() => setEditingMatterType(false)}>Cancel</Button>
+                    </div>
+                  ) : (
+                    <span className="flex items-center gap-2">
+                      <Badge variant="outline" className="text-xs">
+                        {MATTER_TYPE_LABELS[caseData.matter_type] ?? "—"}
+                      </Badge>
+                      <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => setEditingMatterType(true)}>
+                        <Pencil className="h-3 w-3" />
+                      </Button>
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Status</span>
+                  <StatusBadge status={caseData.status} />
+                </div>
+                <p className="text-xs text-muted-foreground -mt-1">
+                  Status changes only through the Next Action / Matter Actions panel above.
+                </p>
                 <div className="flex justify-between"><span className="text-muted-foreground">Case Type</span><span className="capitalize">{caseData.case_type}</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">Jurisdiction</span><span>{caseData.jurisdiction_county}, {caseData.jurisdiction_state}</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">Opened</span><span>{format(new Date(caseData.opened_date), "MMM d, yyyy")}</span></div>
