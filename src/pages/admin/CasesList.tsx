@@ -14,6 +14,7 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { MATTER_TYPE_LABELS } from "@/lib/matter";
 type SortColumn = "case_number" | "client" | "tenant" | "property" | "status" | "priority" | "updated" | null;
 
 export default function CasesList() {
@@ -269,9 +270,9 @@ export default function CasesList() {
             </TableHeader>
             <TableBody>
               {loading ? (
-                <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Loading…</TableCell></TableRow>
+                <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">Loading…</TableCell></TableRow>
               ) : sorted.length === 0 ? (
-                <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">No cases found</TableCell></TableRow>
+                <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">No cases found</TableCell></TableRow>
               ) : (
                 sorted.map((c) => (
                   <TableRow
