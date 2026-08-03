@@ -707,6 +707,36 @@ export default function CaseDetail() {
         </TabsContent>
       </Tabs>
 
+      {/* Workflow */}
+      <div className="space-y-4">
+        <NextActionPanel caseId={id!} status={caseData.status} refreshKey={workflowKey} onChanged={load} />
+        <Collapsible open={workflowOpen} onOpenChange={setWorkflowOpen}>
+          <CollapsibleTrigger asChild>
+            <Button variant="outline" className="w-full justify-between">
+              <span>Workflow tools — actions, holds, eligibility, filing, referral, requests, privileged notes</span>
+              <ChevronDown className={cn("h-4 w-4 transition-transform", workflowOpen && "rotate-180")} />
+            </Button>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="space-y-4 pt-4">
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-4">
+                <MatterActionsPanel caseId={id!} status={caseData.status} onChanged={() => { setWorkflowKey((k) => k + 1); load(); }} />
+                <MatterHoldPanel caseId={id!} onChanged={() => { setWorkflowKey((k) => k + 1); load(); }} />
+              </div>
+              <div className="space-y-4">
+                <MatterEligibilityPanel caseId={id!} onChanged={() => { setWorkflowKey((k) => k + 1); load(); }} />
+                <FilingApprovalPanel caseId={id!} actorRole="admin" onChanged={() => { setWorkflowKey((k) => k + 1); load(); }} />
+              </div>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              <ReferralPanel caseId={id!} actorRole="admin" onChanged={() => { setWorkflowKey((k) => k + 1); load(); }} />
+              <InformationRequestsPanel caseId={id!} viewer="admin" onChanged={() => { setWorkflowKey((k) => k + 1); load(); }} />
+            </div>
+            <PrivilegedNotesPanel caseId={id!} viewer="admin" />
+          </CollapsibleContent>
+        </Collapsible>
+      </div>
+
       {/* Court Event Dialog */}
       <CourtEventDialog
         open={courtDialogOpen}
