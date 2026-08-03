@@ -35,7 +35,7 @@ export default function OAuthConsent() {
         return;
       }
       setUserEmail(sess.session.user.email ?? null);
-      const { data, error } = await supabase.auth.oauth.getAuthorizationDetails(authorizationId);
+      const { data, error } = await oauthApi.getAuthorizationDetails(authorizationId);
       if (!active) return;
       if (error) return setError(error.message);
       const immediate = (data as AuthorizationDetails)?.redirect_url ?? (data as AuthorizationDetails)?.redirect_to;
